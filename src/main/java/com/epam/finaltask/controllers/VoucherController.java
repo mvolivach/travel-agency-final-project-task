@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +84,7 @@ public class VoucherController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ADMIN_CREATE')")
-    public ResponseEntity<Map<String, String>> createVoucher(@RequestBody VoucherDTO voucherDTO) {
+    public ResponseEntity<Map<String, String>> createVoucher(@Valid @RequestBody VoucherDTO voucherDTO) {
         voucherService.create(voucherDTO);
         Map<String, String> response = new HashMap<>();
         response.put("statusCode", "OK");
@@ -94,7 +94,7 @@ public class VoucherController {
 
     @PatchMapping("/change/{voucherId}")
     @PreAuthorize("hasAuthority('ADMIN_UPDATE')")
-    public ResponseEntity<Map<String, String>> updateVoucher(@PathVariable String voucherId, @RequestBody VoucherDTO voucherDTO) {
+    public ResponseEntity<Map<String, String>> updateVoucher(@PathVariable String voucherId, @Valid @RequestBody VoucherDTO voucherDTO) {
         voucherService.update(voucherId, voucherDTO);
         Map<String, String> response = new HashMap<>();
         response.put("statusCode", "OK");
@@ -181,6 +181,4 @@ public class VoucherController {
         response.put("results", vouchers);
         return ResponseEntity.ok(response);
     }
-
-
 }

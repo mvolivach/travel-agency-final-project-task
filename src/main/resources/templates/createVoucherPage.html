@@ -150,6 +150,20 @@
     document.getElementById('voucherForm').addEventListener('submit', (event) => {
         event.preventDefault();
 
+        const arrivalDate = document.getElementById('arrivalDate').value;
+        const evictionDate = document.getElementById('evictionDate').value;
+
+        const today = new Date().toISOString().split('T')[0];
+        if (arrivalDate < today) {
+            alert('Arrival date cannot be in the past.');
+            return;
+        }
+
+        if (arrivalDate > evictionDate) {
+            alert('Arrival date cannot be later than eviction date.');
+            return;
+        }
+
         const voucherData = {
             title: document.getElementById('title').value,
             description: document.getElementById('description').value,

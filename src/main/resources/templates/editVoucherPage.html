@@ -201,7 +201,19 @@
         });
     document.getElementById('editVoucherForm').addEventListener('submit', function(event) {
         event.preventDefault();
+        const arrivalDate = new Date(document.getElementById('arrivalDate').value);
+        const evictionDate = new Date(document.getElementById('evictionDate').value);
+        const today = new Date();
 
+        if (arrivalDate < today) {
+            alert("Arrival date cannot be in the past.");
+            return;
+        }
+
+        if (arrivalDate > evictionDate) {
+            alert("Arrival date cannot be later than eviction date.");
+            return;
+        }
         const voucherData = {
             title: document.getElementById('title').value,
             description: document.getElementById('description').value,

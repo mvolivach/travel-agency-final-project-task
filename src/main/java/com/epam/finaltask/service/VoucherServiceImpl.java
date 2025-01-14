@@ -9,6 +9,7 @@ import com.epam.finaltask.repository.UserRepository;
 import com.epam.finaltask.repository.VoucherRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -78,6 +79,18 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     public VoucherDTO create(VoucherDTO voucherDTO) {
+        if (voucherDTO.getArrivalDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Arrival date cannot be in the past");
+        }
+
+        if (voucherDTO.getEvictionDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Eviction date cannot be in the past");
+        }
+
+        if (voucherDTO.getEvictionDate().isBefore(voucherDTO.getArrivalDate())) {
+            throw new IllegalArgumentException("Eviction date cannot be earlier than arrival date");
+        }
+
         User user = null;
         if (voucherDTO.getUserId() != null) {
             user = userRepository.findById(voucherDTO.getUserId())
@@ -139,8 +152,19 @@ public class VoucherServiceImpl implements VoucherService {
             throw new IllegalStateException("Voucher status is PAID and cannot be modified. Change the status first.");
         }
 
-        User user = null;
+        if (voucherDTO.getArrivalDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Arrival date cannot be in the past");
+        }
 
+        if (voucherDTO.getEvictionDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Eviction date cannot be in the past");
+        }
+
+        if (voucherDTO.getEvictionDate().isBefore(voucherDTO.getArrivalDate())) {
+            throw new IllegalArgumentException("Eviction date cannot be earlier than arrival date");
+        }
+
+        User user = null;
         if (voucherDTO.getUserId() != null) {
             user = userRepository.findById(voucherDTO.getUserId())
                     .orElseThrow(() -> new EntityNotFoundException("User not found", StatusCodes.ENTITY_NOT_FOUND));
@@ -199,8 +223,6 @@ public class VoucherServiceImpl implements VoucherService {
                 .map(voucherMapper::toVoucherDTO)
                 .collect(Collectors.toList());
     }
-
-
 
     @Override
     public List<VoucherDTO> findAllByTransferType(String transferType) {
