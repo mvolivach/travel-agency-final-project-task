@@ -162,6 +162,7 @@
             accountStatus: "Account Status",
             balance: "Balance",
             add: "Add",
+            cancelVoucher: "Cancel Voucher",
             phoneNumber: "Phone Number",
             enterAmount: "Enter amount to add",
             invalidAmount: "Please enter a valid amount.",
@@ -195,6 +196,7 @@
             accountStatus: "Статус акаунта",
             balance: "Баланс",
             add: "Додати",
+            cancelVoucher: "Скасувати ваучер",
             phoneNumber: "Номер телефону",
             enterAmount: "Введіть суму для додавання",
             invalidAmount: "Будь ласка, введіть правильну суму.",
@@ -233,6 +235,9 @@
         document.getElementById("updateBalanceButton").textContent = translations[language].add;
         document.getElementById("balanceAmount").placeholder = translations[language].enterAmount;
         document.getElementById("phoneField").childNodes[0].textContent = translations[language].phoneNumber + ": ";
+        document.querySelectorAll('.cancel-voucher-btn').forEach(button => {
+            button.textContent = translations[language].cancelVoucher || "Cancel Voucher";
+        });
     };
 
     const setInitialLanguage = () => {
@@ -262,6 +267,7 @@
         .then(data => {
             if (data.statusCode === 'OK') {
                 const user = data.data;
+                const language = languageSelect.value;
                 document.getElementById('username').textContent = user.username;
                 document.getElementById('role').textContent = user.role;
                 document.getElementById('status').textContent = user.accountStatus ? 'Active' : 'Inactive';
@@ -271,7 +277,7 @@
                 document.getElementById('updateBalanceButton').addEventListener('click', () => {
                     const amount = parseFloat(document.getElementById('balanceAmount').value);
                     if (isNaN(amount) || amount <= 0) {
-                        alert(translations[languageSelect.value].invalidAmount);
+                        alert(translations[language].invalidAmount);
                         return;
                     }
 
@@ -286,14 +292,14 @@
                         .then(updateData => {
                             if (updateData.statusCode === 'OK') {
                                 document.getElementById('balance').textContent = updateData.data.balance.toFixed(2);
-                                alert(translations[languageSelect.value].balanceUpdated);
+                                alert(translations[language].balanceUpdated);
                             } else {
-                                alert(translations[languageSelect.value].balanceUpdateFailed + updateData.statusMessage);
+                                alert(translations[language].balanceUpdateFailed + updateData.statusMessage);
                             }
                         })
                         .catch(error => {
                             console.error('Error updating balance:', error);
-                            alert(translations[languageSelect.value].generalError);
+                            alert(translations[language].generalError);
                         });
                 });
 
@@ -322,18 +328,19 @@
                                     <td>${voucher.evictionDate}</td>
                                     <td>${voucher.isHot === 'true' ? 'Yes' : 'No'}</td>
                                     <td>
-                                        ${voucher.status === 'PAID' ? `<button class="btn cancel-voucher-btn" data-voucher-id="${voucher.id}">Cancel Voucher</button>` : ''}
+                                     ${voucher.status === 'PAID' ? `<button class="btn cancel-voucher-btn" data-voucher-id="${voucher.id}">${translations[language].cancelVoucher}</button>` : ''}
                                     </td>
+
                                 `;
                                 vouchersList.appendChild(voucherRow);
                             });
                         } else {
-                            vouchersList.innerHTML = '<tr><td colspan="11" class="text-center">' + translations[languageSelect.value].vouchersError + '</td></tr>';
+                            vouchersList.innerHTML = '<tr><td colspan="11" class="text-center">' + translations[language].vouchersError + '</td></tr>';
                         }
                     })
                     .catch(error => {
                         console.error('Error fetching vouchers:', error);
-                        alert(translations[languageSelect.value].vouchersError);
+                        alert(translations[language].vouchersError);
                     });
             } else {
                 alert(translations[languageSelect.value].userDataError);
@@ -352,7 +359,7 @@
         if (event.target.classList.contains('cancel-voucher-btn')) {
             const voucherId = event.target.getAttribute('data-voucher-id');
             const userId = localStorage.getItem('userId');
-
+            const language = languageSelect.value;
             if (confirm(translations[languageSelect.value].cancelVoucherConfirm)) {
                 fetch(`/vouchers/cancel/${voucherId}`, {
                     method: 'PATCH',
@@ -365,15 +372,15 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.statusCode === 'OK') {
-                            alert(translations[languageSelect.value].cancelVoucherSuccess);
+                            alert(translations[language].cancelVoucherSuccess);
                             location.reload();
                         } else {
-                            alert(translations[languageSelect.value].cancelVoucherError + data.statusMessage);
+                            alert(translations[language].cancelVoucherError + data.statusMessage);
                         }
                     })
                     .catch(error => {
                         console.error('Error canceling voucher:', error);
-                        alert(translations[languageSelect.value].cancelVoucherError);
+                        alert(translations[language].cancelVoucherError);
                     });
             }
         }

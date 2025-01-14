@@ -41,33 +41,24 @@
             border-radius: 20px;
             transition: background-color 0.3s ease;
         }
-
         .navbar .btn-custom:hover {
             background-color: #4a4a4a;
             cursor: pointer;
         }
 
         .btn-save {
-            background-color: #e6e6e6;
-            border-radius: 20px;
-            padding: 5px 10px;
+            background-color: #c7c5c5;
             text-transform: uppercase;
             font-weight: bold;
-            font-size: 12px;
-            margin-bottom: 10px;
-            border: none;
+            border-radius: 20px;
             transition: background-color 0.3s ease;
-        }
-
-        .center-button {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
+            display: block;
+            margin: 0 auto;
+            text-align: center;
         }
 
         .btn-save:hover {
-            background-color: #c7c5c5;
+            background-color: #4a4a4a;
             cursor: pointer;
         }
     </style>
@@ -79,28 +70,32 @@
             <button class="btn btn-custom" id="usersButton">Users</button>
             <button class="btn btn-custom" id="voucherButton">Vouchers</button>
         </div>
+        <select id="languageSelector" class="form-select w-auto">
+            <option value="en">English</option>
+            <option value="uk">Українська</option>
+        </select>
         <button class="btn ms-auto btn-custom" id="logoutButton">Logout</button>
     </div>
 </nav>
 
 <div class="container d-flex flex-column align-items-center vh-100 py-5">
-    <h3 class="text-center mb-4">Edit Voucher</h3>
+    <h3 class="text-center mb-4"  id="formTitle">Edit Voucher</h3>
     <div class="form-container w-100">
         <form id="editVoucherForm">
             <div class="mb-3">
-                <label for="title" class="form-label">Title</label>
+                <label for="title" class="form-label" id="titleLabel">Title</label>
                 <input type="text" class="form-control" id="title" required>
             </div>
             <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
+                <label for="description" class="form-label" id="descriptionLabel">Description</label>
                 <textarea class="form-control" id="description" rows="3" required></textarea>
             </div>
             <div class="mb-3">
-                <label for="price" class="form-label">Price</label>
+                <label for="price" class="form-label" id="priceLabel">Price</label>
                 <input type="number" step="0.01" class="form-control" id="price" required>
             </div>
             <div class="mb-3">
-                <label for="tourType" class="form-label">Tour Type</label>
+                <label for="tourType" class="form-label" id="tourTypeLabel">Tour Type</label>
                 <select class="form-select" id="tourType" required>
                     <option value="">Choose...</option>
                     <option value="HEALTH">Health</option>
@@ -114,7 +109,7 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label for="transferType" class="form-label">Transfer Type</label>
+                <label for="transferType" class="form-label" id="transferTypeLabel">Transfer Type</label>
                 <select class="form-select" id="transferType" required>
                     <option value="">Choose...</option>
                     <option value="BUS">Bus</option>
@@ -128,7 +123,7 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label for="hotelType" class="form-label">Hotel Type</label>
+                <label for="hotelType" class="form-label" id="hotelTypeLabel">Hotel Type</label>
                 <select class="form-select" id="hotelType" required>
                     <option value="">Choose...</option>
                     <option value="ONE_STAR">1 Star</option>
@@ -139,7 +134,7 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label for="status" class="form-label">Status</label>
+                <label for="status" class="form-label" id="statusLabel">Status</label>
                 <select class="form-select" id="status" required>
                     <option value="">Choose...</option>
                     <option value="REGISTERED">Registered</option>
@@ -148,27 +143,188 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label for="arrivalDate" class="form-label">Arrival Date</label>
+                <label for="arrivalDate" class="form-label" id="arrivalDateLabel">Arrival Date</label>
                 <input type="date" class="form-control" id="arrivalDate" required>
             </div>
             <div class="mb-3">
-                <label for="evictionDate" class="form-label">Eviction Date</label>
+                <label for="evictionDate" class="form-label"  id="evictionDateLabel">Eviction Date</label>
                 <input type="date" class="form-control" id="evictionDate" required>
             </div>
             <div class="form-check mb-3">
                 <input type="checkbox" class="form-check-input" id="isHot">
-                <label for="isHot" class="form-check-label">Hot Voucher</label>
+                <label for="isHot" class="form-check-label" id="isHotLabel">Hot Voucher</label>
             </div>
-            <div class="center-button">
-                <button class="btn-save">Save</button>
-            </div>
-
+                <button type="submit" class="btn btn-save"  id="saveButton">Save</button>
         </form>
     </div>
 </div>
 
 <script>
     const token = localStorage.getItem('token');
+
+    const translations = {
+        en: {
+            formTitle: "Edit voucher",
+            titleLabel: "Title",
+            descriptionLabel: "Description",
+            priceLabel: "Price",
+            tourTypeLabel: "Tour Type",
+            transferTypeLabel: "Transfer Type",
+            hotelTypeLabel: "Hotel Type",
+            statusLabel: "Status",
+            arrivalDateLabel: "Arrival Date",
+            evictionDateLabel: "Eviction Date",
+            isHotLabel: "Hot Voucher",
+            saveButton: "Save changes",
+            usersButton: "Users",
+            voucherButton: "Vouchers",
+            logoutButton: "Logout",
+            alerts: {
+                loadError: "Failed to load voucher data.",
+                pastArrivalDate: "Arrival date cannot be in the past.",
+                invalidDateOrder: "Arrival date cannot be later than eviction date.",
+                updateError: "Failed to update voucher.",
+                updateSuccess: "Voucher updated successfully."
+            },
+            options: {
+                tourType: {
+                    HEALTH: "Health",
+                    SPORTS: "Sports",
+                    LEISURE: "Leisure",
+                    SAFARI: "Safari",
+                    WINE: "Wine",
+                    ECO: "Eco",
+                    ADVENTURE: "Adventure",
+                    CULTURAL: "Cultural"
+                },
+                transferType: {
+                    BUS: "Bus",
+                    TRAIN: "Train",
+                    PLANE: "Plane",
+                    SHIP: "Ship",
+                    PRIVATE_CAR: "Private Car",
+                    JEEPS: "Jeeps",
+                    MINIBUS: "Minibus",
+                    ELECTRICAL_CARS: "Electrical Cars"
+                },
+                hotelType: {
+                    ONE_STAR: "One Star",
+                    TWO_STARS: "Two Stars",
+                    THREE_STARS: "Three Stars",
+                    FOUR_STARS: "Four Stars",
+                    FIVE_STARS: "Five Stars"
+                },
+                status: {
+                    REGISTERED: "Registered"
+                }
+            }
+        },
+        uk: {
+            formTitle: "Редагувати ваучер",
+            titleLabel: "Назва",
+            descriptionLabel: "Опис",
+            priceLabel: "Ціна",
+            tourTypeLabel: "Тип Туру",
+            transferTypeLabel: "Тип Транспорту",
+            hotelTypeLabel: "Тип Готелю",
+            statusLabel: "Статус",
+            arrivalDateLabel: "Дата Приїзду",
+            evictionDateLabel: "Дата Від'їзду",
+            isHotLabel: "Гарячий Ваучер",
+            saveButton: "Зберегти зміни",
+            usersButton: "Користувачі",
+            voucherButton: "Ваучери",
+            logoutButton: "Вийти",
+            alerts: {
+                loadError: "Не вдалося завантажити дані ваучера.",
+                pastArrivalDate: "Дата приїзду не може бути в минулому.",
+                invalidDateOrder: "Дата приїзду не може бути пізніше дати від'їзду.",
+                updateError: "Не вдалося оновити ваучер.",
+                updateSuccess: "Ваучер успішно оновлено."
+            },
+            options: {
+                tourType: {
+                    HEALTH: "Оздоровчий",
+                    SPORTS: "Спортивний",
+                    LEISURE: "Відпочинок",
+                    SAFARI: "Сафарі",
+                    WINE: "Винний",
+                    ECO: "Екологічний",
+                    ADVENTURE: "Пригодницький",
+                    CULTURAL: "Культурний"
+                },
+                transferType: {
+                    BUS: "Автобус",
+                    TRAIN: "Поїзд",
+                    PLANE: "Літак",
+                    SHIP: "Корабель",
+                    PRIVATE_CAR: "Приватне авто",
+                    JEEPS: "Джипи",
+                    MINIBUS: "Мікроавтобус",
+                    ELECTRICAL_CARS: "Електрокари"
+                },
+                hotelType: {
+                    ONE_STAR: "Одна Зірка",
+                    TWO_STARS: "Дві Зірки",
+                    THREE_STARS: "Три Зірки",
+                    FOUR_STARS: "Чотири Зірки",
+                    FIVE_STARS: "П'ять Зірок"
+                },
+                status: {
+                    REGISTERED: "Зареєстрований"
+                }
+            }
+        }
+    };
+    const updateOptions = (language) => {
+        const updateDropdown = (dropdownId, options) => {
+            const dropdown = document.getElementById(dropdownId);
+            dropdown.innerHTML = "";
+            for (const [value, label] of Object.entries(options)) {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = label;
+                dropdown.appendChild(option);
+            }
+        };
+        updateDropdown('tourType', translations[language].options.tourType);
+        updateDropdown('transferType', translations[language].options.transferType);
+        updateDropdown('hotelType', translations[language].options.hotelType);
+        updateDropdown('status', translations[language].options.status);
+    };
+    const updateLanguage = (language) => {
+        document.getElementById('formTitle').textContent = translations[language].formTitle;
+        document.getElementById('titleLabel').textContent = translations[language].titleLabel;
+        document.getElementById('descriptionLabel').textContent = translations[language].descriptionLabel;
+        document.getElementById('priceLabel').textContent = translations[language].priceLabel;
+        document.getElementById('tourTypeLabel').textContent = translations[language].tourTypeLabel;
+        document.getElementById('transferTypeLabel').textContent = translations[language].transferTypeLabel;
+        document.getElementById('hotelTypeLabel').textContent = translations[language].hotelTypeLabel;
+        document.getElementById('statusLabel').textContent = translations[language].statusLabel;
+        document.getElementById('arrivalDateLabel').textContent = translations[language].arrivalDateLabel;
+        document.getElementById('evictionDateLabel').textContent = translations[language].evictionDateLabel;
+        document.getElementById('isHotLabel').textContent = translations[language].isHotLabel;
+        document.getElementById('saveButton').textContent = translations[language].saveButton;
+        document.getElementById('usersButton').textContent = translations[language].usersButton;
+        document.getElementById('voucherButton').textContent = translations[language].voucherButton;
+        document.getElementById('logoutButton').textContent = translations[language].logoutButton;
+        updateOptions(language);
+    };
+
+    const setInitialLanguage = () => {
+        const savedLanguage = localStorage.getItem('language') || 'en';
+        document.getElementById('languageSelector').value = savedLanguage;
+        updateLanguage(savedLanguage);
+    };
+
+    document.getElementById('languageSelector').addEventListener('change', (e) => {
+        const selectedLanguage = e.target.value;
+        localStorage.setItem('language', selectedLanguage);
+        updateLanguage(selectedLanguage);
+    });
+
+    setInitialLanguage();
+
     if (!token) {
         window.location.href = '/view/login';
     }
@@ -196,24 +352,26 @@
             document.getElementById('isHot').checked = data.isHot === true;
         })
         .catch(error => {
-            console.error('Error fetching voucher:', error);
-            alert('Failed to load voucher data.');
+            alert(translations[getCurrentLanguage()].alerts.loadError);
         });
+
     document.getElementById('editVoucherForm').addEventListener('submit', function(event) {
         event.preventDefault();
+        const language = getCurrentLanguage();
         const arrivalDate = new Date(document.getElementById('arrivalDate').value);
         const evictionDate = new Date(document.getElementById('evictionDate').value);
         const today = new Date();
 
         if (arrivalDate < today) {
-            alert("Arrival date cannot be in the past.");
+            alert(translations[language].alerts.pastArrivalDate);
             return;
         }
 
         if (arrivalDate > evictionDate) {
-            alert("Arrival date cannot be later than eviction date.");
+            alert(translations[language].alerts.invalidDateOrder);
             return;
         }
+
         const voucherData = {
             title: document.getElementById('title').value,
             description: document.getElementById('description').value,
@@ -237,12 +395,11 @@
         })
             .then(response => response.json())
             .then(data => {
-                alert(data.statusMessage);
+                alert(translations[language].alerts.updateSuccess);
                 window.location.href = '/view/allVouchersAdmin';
             })
             .catch(error => {
-                console.error('Error updating voucher:', error);
-                alert('Failed to update voucher.');
+                alert(translations[language].alerts.updateError);
             });
     });
     document.getElementById('voucherButton').addEventListener('click', () => {

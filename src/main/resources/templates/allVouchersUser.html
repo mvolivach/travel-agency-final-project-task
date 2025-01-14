@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Vouchers</title>
+    <title>All Vouchers User</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" href="data:,">
     <style>
@@ -177,6 +177,8 @@
             noVouchersFound: "No vouchers found.",
             orderFailed: "Order failed.",
             voucherOrdered: "Voucher successfully ordered!",
+            loadFailed: "Loading faild",
+            order: "Order",
             filter: {
                 tourType: "Tour Type",
                 transferType: "Transfer Type",
@@ -231,6 +233,8 @@
             noVouchersFound: "Ваучерів не знайдено.",
             orderFailed: "Не вдалося оформити замовлення.",
             voucherOrdered: "Ваучер успішно замовлений!",
+            loadFailed: "Помилка завантаження",
+            order: "Замовити",
             filter: {
                 tourType: "Тип туру",
                 transferType: "Тип трансферу",
@@ -269,23 +273,48 @@
         }
     };
     const updateFiltersLocalization = (language) => {
-        document.getElementById('tourTypeFilter').innerHTML = `
-        <option value="">${translations[language].filter.tourType}</option>
-        ${Object.entries(translations[language].filter.tourTypes).map(([key, value]) => `<option value="${key}">${value}</option>`).join('')}
-    `;
-        document.getElementById('transferTypeFilter').innerHTML = `
-        <option value="">${translations[language].filter.transferType}</option>
-        ${Object.entries(translations[language].filter.transferTypes).map(([key, value]) => `<option value="${key}">${value}</option>`).join('')}
-    `;
-        document.getElementById('hotelTypeFilter').innerHTML = `
-        <option value="">${translations[language].filter.hotelType}</option>
-        ${Object.entries(translations[language].filter.hotelTypes).map(([key, value]) => `<option value="${key}">${value}</option>`).join('')}
-    `;
+        const updateDropdown = (dropdownId, placeholder, options) => {
+            const dropdown = document.getElementById(dropdownId);
+            dropdown.innerHTML = "";
+            const placeholderOption = document.createElement('option');
+            placeholderOption.value = "";
+            placeholderOption.textContent = placeholder;
+            dropdown.appendChild(placeholderOption);
+            for (const [value, label] of Object.entries(options)) {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = label;
+                dropdown.appendChild(option);
+            }
+        };
+
+        updateDropdown(
+            'tourTypeFilter',
+            translations[language].filter.tourType,
+            translations[language].filter.tourTypes
+        );
+        updateDropdown(
+            'transferTypeFilter',
+            translations[language].filter.transferType,
+            translations[language].filter.transferTypes
+        );
+        updateDropdown(
+            'hotelTypeFilter',
+            translations[language].filter.hotelType,
+            translations[language].filter.hotelTypes
+        );
+
         document.getElementById('minPriceFilter').placeholder = translations[language].filter.minPrice;
         document.getElementById('maxPriceFilter').placeholder = translations[language].filter.maxPrice;
-        document.querySelector('#filterForm button[type="submit"]').textContent = translations[language].filter.applyFilters;
+
+        const applyButton = document.querySelector('#filterForm button[type="submit"]');
+        if (applyButton) {
+            applyButton.textContent = translations[language].filter.applyFilters;
+        }
     };
+
     const languageSelect = document.getElementById('languageSelect');
+
     const updateLanguage = (language) => {
         document.getElementById('accountButton').textContent = translations[language].account;
         document.getElementById('logoutButton').textContent = translations[language].logout;
@@ -301,6 +330,11 @@
         document.getElementById('hotHeader').textContent = translations[language].hot;
         document.getElementById('actionHeader').textContent = translations[language].action;
         document.getElementById('allVouchersTitle').textContent = translations[language].allVouchers;
+        document.querySelectorAll('.order-btn').forEach(button => {
+            button.textContent = translations[languageSelect.value].order;
+        });
+
+
         updateFiltersLocalization(language);
     };
 
@@ -315,6 +349,7 @@
         localStorage.setItem('language', selectedLanguage);
         updateLanguage(selectedLanguage);
     });
+
     setInitialLanguage();
 
     if (!token) {
@@ -345,7 +380,11 @@
                         <td>${voucher.arrivalDate}</td>
                         <td>${voucher.evictionDate}</td>
                         <td>${voucher.isHot === 'true' ? 'Yes' : 'No'}</td>
-                        <td><button class="btn order-btn" data-voucher-id="${voucher.id}" data-user-id="${userId}">Order</button></td>
+                        <td>
+        <button class="btn order-btn" data-voucher-id="${voucher.id}" data-user-id="${userId}">
+            ${translations[languageSelect.value].order}
+        </button>
+    </td>
                     `;
                     vouchersList.appendChild(voucherRow);
 
@@ -360,11 +399,11 @@
                         })
                             .then(response => {
                                 if (response.ok) {
-                                    alert(translations[language].voucherOrdered);
+                                    alert(translations[languageSelect.value].voucherOrdered);
                                     location.reload();
                                 } else {
                                     response.json().then(data => {
-                                        alert(data.statusMessage || translations[language].orderFailed);
+                                        alert(data.statusMessage || translations[languageSelect.value].orderFailed);
                                     });
                                 }
                             })
@@ -372,12 +411,12 @@
                     });
                 });
             } else {
-                vouchersList.innerHTML = `<tr><td colspan="11" class="text-center">${translations[language].noVouchersFound}</td></tr>`;
+                vouchersList.innerHTML = `<tr><td colspan="11" class="text-center">${translations[languageSelect.value].noVouchersFound}</td></tr>`;
             }
         })
         .catch(error => {
             console.error('Error fetching vouchers:', error);
-            alert('Failed to load vouchers.');
+            alert(translations[languageSelect.value].loadFailed);
         });
 
     document.getElementById('logoutButton').addEventListener('click', () => {
@@ -448,11 +487,11 @@
                             })
                                 .then(response => {
                                     if (response.ok) {
-                                        alert(translations[language].voucherOrdered);
+                                        alert(translations[languageSelect.value].voucherOrdered);
                                         location.reload();
                                     } else {
                                         response.json().then(data => {
-                                            alert(data.statusMessage || translations[language].orderFailed);
+                                            alert(data.statusMessage || translations[languageSelect.value].orderFailed);
                                         });
                                     }
                                 })
@@ -460,12 +499,12 @@
                         });
                     });
                 } else {
-                    vouchersList.innerHTML = `<tr><td colspan="11" class="text-center">${translations[language].noVouchersFound}</td></tr>`;
+                    vouchersList.innerHTML = `<tr><td colspan="11" class="text-center">${translations[languageSelect.value].noVouchersFound}</td></tr>`;
                 }
             })
             .catch(error => {
                 console.error('Error fetching filtered vouchers:', error);
-                alert('Failed to load filtered vouchers.');
+                alert(translations[languageSelect.value].loadFailed);
             });
     });
 </script>

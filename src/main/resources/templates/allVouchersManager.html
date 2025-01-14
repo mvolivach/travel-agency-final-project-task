@@ -120,6 +120,7 @@
             arrivalDate: "Arrival Date",
             evictionDate: "Eviction Date",
             hot: "Hot",
+            allVouchers: "All vouchers",
             statusUpdateSuccess: "Tour status updated to \"{status}\" successfully.",
             statusUpdateFail: "Failed to update tour status.",
             hotUpdateSuccess: "Hot status updated to \"{hotStatus}\" successfully.",
@@ -139,6 +140,7 @@
             arrivalDate: "Дата приїзду",
             evictionDate: "Дата виселення",
             hot: "Гарячий",
+            allVouchers: "Усі ваучери",
             statusUpdateSuccess: "Статус туру успішно оновлено на \"{status}\".",
             statusUpdateFail: "Не вдалося оновити статус туру.",
             hotUpdateSuccess: "Гарячий статус успішно оновлено на \"{hotStatus}\".",
@@ -161,6 +163,7 @@
         document.getElementById('arrivalDateHeader').textContent = translations[language].arrivalDate;
         document.getElementById('evictionDateHeader').textContent = translations[language].evictionDate;
         document.getElementById('hotHeader').textContent = translations[language].hot;
+        document.getElementById('allVouchersTitle').textContent = translations[language].allVouchers;
     };
 
     const setInitialLanguage = () => {

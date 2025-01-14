@@ -88,7 +88,7 @@
     </div>
 </nav>
 <div class="container py-5">
-    <h3 class="text-center mb-4">All Vouchers</h3>
+    <h3 class="text-center mb-4" id="allVouchersTitle">All Vouchers</h3>
     <table class="table voucher-table">
         <thead>
         <tr>
@@ -129,6 +129,7 @@
             evictionDate: "Eviction Date",
             hot: "Hot",
             action: "Action",
+            allVouchers: "All Vouchers",
             alertEditLock: "To unlock editing please change status to registered or canceled",
             alertStatusUpdateSuccess: "Tour status updated to \"{status}\" successfully.",
             alertStatusUpdateFail: "Failed to update tour status.",
@@ -136,7 +137,9 @@
             alertHotStatusUpdateFail: "Failed to update hot status.",
             alertDeleteSuccess: "Voucher deleted successfully.",
             alertDeleteFail: "Failed to delete voucher.",
-            alertFetchFail: "Failed to load vouchers."
+            alertFetchFail: "Failed to load vouchers.",
+            edit: "Edit",
+            delete: "Delete"
         },
         uk: {
             users: "Користувачі",
@@ -153,6 +156,7 @@
             evictionDate: "Дата виселення",
             hot: "Гарячий",
             action: "Дія",
+            allVouchers: "Усі ваучери",
             alertEditLock: "Щоб розблокувати редагування, змініть статус на зареєстрований або скасований",
             alertStatusUpdateSuccess: "Статус туру оновлено до \"{status}\" успішно.",
             alertStatusUpdateFail: "Не вдалося оновити статус туру.",
@@ -160,7 +164,9 @@
             alertHotStatusUpdateFail: "Не вдалося оновити гарячий статус.",
             alertDeleteSuccess: "Ваучер успішно видалено.",
             alertDeleteFail: "Не вдалося видалити ваучер.",
-            alertFetchFail: "Не вдалося завантажити ваучери."
+            alertFetchFail: "Не вдалося завантажити ваучери.",
+            edit: "Редагувати",
+            delete: "Видалити"
         }
     };
 
@@ -173,20 +179,28 @@
         return translation;
     };
     const updateLanguage = (language) => {
-        document.getElementById('voucherButton').textContent = getTranslation('newVoucher');
-        document.getElementById('usersButton').textContent = getTranslation('users');
-        document.getElementById('logoutButton').textContent = getTranslation('logout');
-        document.getElementById('titleHeader').textContent = getTranslation('title');
-        document.getElementById('descriptionHeader').textContent = getTranslation('description');
-        document.getElementById('priceHeader').textContent = getTranslation('price');
-        document.getElementById('tourTypeHeader').textContent = getTranslation('tourType');
-        document.getElementById('transferTypeHeader').textContent = getTranslation('transferType');
-        document.getElementById('hotelTypeHeader').textContent = getTranslation('hotelType');
-        document.getElementById('statusHeader').textContent = getTranslation('status');
-        document.getElementById('arrivalDateHeader').textContent = getTranslation('arrivalDate');
-        document.getElementById('evictionDateHeader').textContent = getTranslation('evictionDate');
-        document.getElementById('hotHeader').textContent = getTranslation('hot');
-        document.getElementById('actionHeader').textContent = getTranslation('action');
+        document.getElementById('voucherButton').textContent = translations[language].newVoucher;
+        document.getElementById('usersButton').textContent = translations[language].users;
+        document.getElementById('logoutButton').textContent = translations[language].logout;
+        document.getElementById('titleHeader').textContent = translations[language].title;
+        document.getElementById('descriptionHeader').textContent = translations[language].description;
+        document.getElementById('priceHeader').textContent = translations[language].price;
+        document.getElementById('tourTypeHeader').textContent = translations[language].tourType;
+        document.getElementById('transferTypeHeader').textContent = translations[language].transferType;
+        document.getElementById('hotelTypeHeader').textContent = translations[language].hotelType;
+        document.getElementById('statusHeader').textContent = translations[language].status;
+        document.getElementById('arrivalDateHeader').textContent = translations[language].arrivalDate;
+        document.getElementById('evictionDateHeader').textContent = translations[language].evictionDate;
+        document.getElementById('hotHeader').textContent = translations[language].hot;
+        document.getElementById('actionHeader').textContent = translations[language].action;
+        document.getElementById('allVouchersTitle').textContent = translations[language].allVouchers;
+        document.querySelectorAll('.editVoucher').forEach(button => {
+            button.textContent = translations[language].edit || "Edit";
+        });
+
+        document.querySelectorAll('.deleteVoucher').forEach(button => {
+            button.textContent = translations[language].delete || "Delete";
+        });
     };
 
     const setInitialLanguage = () => {
@@ -246,8 +260,8 @@
                             </div>
                         </td>
                         <td>
-                            <button class="btn btn-sm editVoucher" data-id="${voucher.id}">Edit</button>
-                            <button class="btn btn-sm deleteVoucher" data-id="${voucher.id}">Delete</button>
+                            <button class="btn btn-sm editVoucher" data-id="${voucher.id}">${getTranslation('edit')}</button>
+                             <button class="btn btn-sm deleteVoucher" data-id="${voucher.id}">${getTranslation('delete')}</button>
                         </td>
                     `;
                     vouchersList.appendChild(voucherRow);
