@@ -5,62 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manager View - All Vouchers</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="data:,">
+
     <style>
         body {
             background-color: #f5f5f5;
             color: #333;
         }
 
-        .voucher-card {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            height: 700px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+        .voucher-table {
+            width: 100%;
+            margin-top: 20px;
         }
 
-        .voucher-card h5 {
-            margin-bottom: 10px;
+        .voucher-table th, .voucher-table td {
+            padding: 12px;
+            text-align: center;
+            vertical-align: middle;
         }
 
-        .voucher-card p {
-            margin: 5px 0;
+        .voucher-table th {
+            background-color: #c7c5c5;
         }
 
-        .voucher-card .btn {
+        .voucher-table td button {
             background-color: #e6e6e6;
             border-radius: 20px;
             padding: 5px 10px;
             text-transform: uppercase;
             font-weight: bold;
             font-size: 12px;
-            margin-bottom: 10px;
             border: none;
             transition: background-color 0.3s ease;
         }
 
-        .voucher-card .btn:hover {
+        .voucher-table td button:hover {
             background-color: #c7c5c5;
             cursor: pointer;
-        }
-
-        .voucher-card .voucher-buttons {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-        }
-
-        .voucher-card .voucher-buttons .btn {
-            width: 48%;
-            margin-bottom: 5px;
-        }
-
-        .voucher-card .voucher-buttons .btn:last-child {
-            margin-right: 0;
         }
 
         .navbar {
@@ -80,23 +61,14 @@
             cursor: pointer;
         }
 
-        #vouchersList {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
+        .form-control-sm {
+            font-size: 12px;
+            padding: 0.5rem;
         }
 
-        @media (max-width: 768px) {
-            .voucher-card {
-                width: calc(50% - 20px);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .voucher-card {
-                width: 100%;
-            }
+        .select-inline {
+            display: inline-block;
+            width: auto;
         }
     </style>
 </head>
@@ -108,9 +80,25 @@
 </nav>
 <div class="container py-5">
     <h3 class="text-center mb-4">All Vouchers</h3>
-    <div id="vouchersList">
-
-    </div>
+    <table class="table voucher-table">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Tour Type</th>
+            <th>Transfer Type</th>
+            <th>Hotel Type</th>
+            <th>Status</th>
+            <th>Arrival Date</th>
+            <th>Eviction Date</th>
+            <th>Hot</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="vouchersList">
+        </tbody>
+    </table>
 </div>
 
 <script>
@@ -132,62 +120,50 @@
             const vouchersList = document.getElementById('vouchersList');
             if (voucherData.results.length > 0) {
                 voucherData.results.forEach(voucher => {
-                    const voucherCard = document.createElement('div');
-                    voucherCard.classList.add('voucher-card');
-                    voucherCard.innerHTML = `
-                        <h5>${voucher.title}</h5>
-                        <p><strong>Description:</strong> ${voucher.description}</p>
-                        <p><strong>Price:</strong> $${voucher.price.toFixed(2)}</p>
-                        <p><strong>Tour Type:</strong> ${voucher.tourType}</p>
-                        <p><strong>Transfer Type:</strong> ${voucher.transferType}</p>
-                        <p><strong>Hotel Type:</strong> ${voucher.hotelType}</p>
-                        <p><strong>Status:</strong> ${voucher.status}</p>
-                        <p><strong>Arrival Date:</strong> ${voucher.arrivalDate}</p>
-                        <p><strong>Eviction Date:</strong> ${voucher.evictionDate}</p>
-                        <p><strong>Hot:</strong> ${voucher.isHot}</p>
-                        <div class="mt-3 voucher-buttons">
-                            <button class="btn btn-sm change-hot-status" data-id="${voucher.id}">Change Hot Status</button>
-                            <button class="btn btn-sm change-tour-status" data-id="${voucher.id}">Change Voucher Status</button>
-                        </div>
-                        <div class="mt-2 tour-status-form" style="display: none;">
-                            <select class="form-control form-control-sm new-tour-status">
-                                <option value="REGISTERED">Registered</option>
-                                <option value="PAID">Paid</option>
-                                <option value="CANCELED">Canceled</option>
-                            </select>
-                            <button class="btn btn-success btn-sm mt-2 save-tour-status" data-id="${voucher.id}">Save Status</button>
-                            <button class="btn btn-secondary btn-sm mt-2 cancel-tour-status">Cancel</button>
-                        </div>
-                        <div class="mt-2 hot-status-form" style="display: none;">
-                            <select class="form-control form-control-sm new-hot-status">
-                                <option value="true">Yes</option>
-                                <option value="false">No</option>
-                            </select>
-                            <button class="btn btn-success btn-sm mt-2 save-hot-status" data-id="${voucher.id}">Save Hot Status</button>
-                            <button class="btn btn-secondary btn-sm mt-2 cancel-hot-status">Cancel</button>
-                        </div>
+                    const voucherRow = document.createElement('tr');
+                    voucherRow.innerHTML = `
+                        <td>${voucher.title}</td>
+                        <td>${voucher.description}</td>
+                        <td>$${voucher.price.toFixed(2)}</td>
+                        <td>${voucher.tourType}</td>
+                        <td>${voucher.transferType}</td>
+                        <td>${voucher.hotelType}</td>
+                        <td>
+                            <div class="select-inline">
+                                <select class="form-control form-control-sm status-select" data-id="${voucher.id}">
+                                    <option value="REGISTERED" ${voucher.status === 'REGISTERED' ? 'selected' : ''}>Registered</option>
+                                    <option value="PAID" ${voucher.status === 'PAID' ? 'selected' : ''}>Paid</option>
+                                    <option value="CANCELED" ${voucher.status === 'CANCELED' ? 'selected' : ''}>Canceled</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>${voucher.arrivalDate}</td>
+                        <td>${voucher.evictionDate}</td>
+                        <td>
+                            <div class="select-inline">
+                                <select class="form-control form-control-sm hot-status-select" data-id="${voucher.id}">
+                                    <option value="true" ${voucher.isHot === 'true' ? 'selected' : ''}>Yes</option>
+                                    <option value="false" ${voucher.isHot === 'false' ? 'selected' : ''}>No</option>
+                                </select>
+                            </div>
+                        </td>
                     `;
-                    vouchersList.appendChild(voucherCard);
+                    vouchersList.appendChild(voucherRow);
                 });
 
-                document.querySelectorAll('.change-tour-status').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const form = e.target.closest('.voucher-card').querySelector('.tour-status-form');
-                        form.style.display = 'block';
+                document.querySelectorAll('.status-select').forEach(select => {
+                    const currentStatus = select.value;
+                    select.addEventListener('change', function () {
+                        const selectedValue = this.value;
+                        if (selectedValue === 'PAID') {
+                            this.querySelector('option[value="REGISTERED"]').disabled = true;
+                        } else {
+                            this.querySelector('option[value="REGISTERED"]').disabled = false;
+                        }
                     });
-                });
-
-                document.querySelectorAll('.cancel-tour-status').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const form = e.target.closest('.tour-status-form');
-                        form.style.display = 'none';
-                    });
-                });
-
-                document.querySelectorAll('.save-tour-status').forEach(button => {
-                    button.addEventListener('click', () => {
-                        const voucherId = button.getAttribute('data-id');
-                        const newStatus = button.closest('.tour-status-form').querySelector('.new-tour-status').value;
+                    select.addEventListener('change', (e) => {
+                        const voucherId = e.target.getAttribute('data-id');
+                        const newStatus = e.target.value;
 
                         fetch(`/vouchers/${voucherId}/status?status=${newStatus}`, {
                             method: 'PATCH',
@@ -196,10 +172,14 @@
                                 'Content-Type': 'application/json'
                             }
                         })
-                            .then(response => response.json())
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Failed to update status');
+                                }
+                                return response.json();
+                            })
                             .then(data => {
                                 alert(`Tour status updated to "${newStatus}" successfully.`);
-                                location.reload();
                             })
                             .catch(error => {
                                 console.error('Error updating tour status:', error);
@@ -208,24 +188,10 @@
                     });
                 });
 
-                document.querySelectorAll('.change-hot-status').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const form = e.target.closest('.voucher-card').querySelector('.hot-status-form');
-                        form.style.display = 'block';
-                    });
-                });
-
-                document.querySelectorAll('.cancel-hot-status').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const form = e.target.closest('.hot-status-form');
-                        form.style.display = 'none';
-                    });
-                });
-
-                document.querySelectorAll('.save-hot-status').forEach(button => {
-                    button.addEventListener('click', () => {
-                        const voucherId = button.getAttribute('data-id');
-                        const newHotStatus = button.closest('.hot-status-form').querySelector('.new-hot-status').value;
+                document.querySelectorAll('.hot-status-select').forEach(select => {
+                    select.addEventListener('change', (e) => {
+                        const voucherId = e.target.getAttribute('data-id');
+                        const newHotStatus = e.target.value === 'true';
 
                         fetch(`/vouchers/${voucherId}/hot-status?hotStatus=${newHotStatus}`, {
                             method: 'PATCH',
@@ -236,8 +202,9 @@
                         })
                             .then(response => response.json())
                             .then(data => {
-                                alert(`Hot status updated to "${newHotStatus}" successfully.`);
-                                location.reload();
+                                const updatedSelect = e.target;
+                                updatedSelect.value = newHotStatus.toString();
+                                alert(`Hot status updated to "${newHotStatus ? 'Yes' : 'No'}" successfully.`);
                             })
                             .catch(error => {
                                 console.error('Error updating hot status:', error);
@@ -245,8 +212,9 @@
                             });
                     });
                 });
+
             } else {
-                vouchersList.innerHTML = '<p class="text-center">No vouchers found.</p>';
+                vouchersList.innerHTML = '<tr><td colspan="11" class="text-center">No vouchers found.</td></tr>';
             }
         })
         .catch(error => {
@@ -260,5 +228,7 @@
         window.location.href = '/view/login';
     });
 </script>
+
+
 </body>
 </html>

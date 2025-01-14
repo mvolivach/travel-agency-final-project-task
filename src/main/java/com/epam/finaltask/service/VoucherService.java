@@ -13,6 +13,7 @@ public interface VoucherService {
     List<VoucherDTO> findAllByUserId(String userId);
     VoucherDTO changeTourStatus(String id, String status);
     VoucherDTO changeHotStatus(String id, boolean hotStatus);
+    void cancelVoucher(String voucherId, UUID userId);
 
     VoucherDTO findById(String voucherId);
     List<VoucherDTO> findAllByTourType(String tourType);

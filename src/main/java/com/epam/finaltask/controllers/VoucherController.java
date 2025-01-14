@@ -43,7 +43,7 @@ public class VoucherController {
     @GetMapping("/voucher/{voucherId}")
     @PreAuthorize("hasAuthority('USER_READ') or hasAuthority('ADMIN_READ') or hasAuthority('MANAGER_READ')")
     public ResponseEntity<VoucherDTO> findVoucherById(@PathVariable String voucherId) {
-        VoucherDTO voucher = voucherService.findById(voucherId); // Викликає метод сервісу
+        VoucherDTO voucher = voucherService.findById(voucherId);
         return ResponseEntity.ok(voucher);
     }
 
@@ -76,7 +76,7 @@ public class VoucherController {
     @GetMapping("/allVouchers")
     @PreAuthorize("hasAuthority('USER_READ') or hasAuthority('ADMIN_READ') or hasAuthority('MANAGER_READ')")
     public ResponseEntity<Map<String, Object>> findAllVouchers() {
-        List<VoucherDTO> vouchers = voucherService.findAll(); // Отримуємо всі ваучери
+        List<VoucherDTO> vouchers = voucherService.findAll();
         Map<String, Object> response = new HashMap<>();
         response.put("results", vouchers);
         return ResponseEntity.ok(response);
@@ -93,7 +93,7 @@ public class VoucherController {
     }
 
     @PatchMapping("/change/{voucherId}")
-    @PreAuthorize("hasAuthority('MANAGER_UPDATE')")
+    @PreAuthorize("hasAuthority('ADMIN_UPDATE')")
     public ResponseEntity<Map<String, String>> updateVoucher(@PathVariable String voucherId, @RequestBody VoucherDTO voucherDTO) {
         voucherService.update(voucherId, voucherDTO);
         Map<String, String> response = new HashMap<>();
@@ -131,6 +131,31 @@ public class VoucherController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/cancel/{voucherId}")
+    @PreAuthorize("hasAuthority('USER_READ') or hasAuthority('ADMIN_READ') or hasAuthority('MANAGER_READ')")
+    public ResponseEntity<Map<String, String>> cancelVoucher(@PathVariable String voucherId, @RequestBody Map<String, String> request) {
+        try {
+            UUID userId = UUID.fromString(request.get("userId"));
+            voucherService.cancelVoucher(voucherId, userId);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("statusCode", "OK");
+            response.put("statusMessage", "Voucher successfully canceled");
+
+            return ResponseEntity.ok(response);
+        } catch (IllegalStateException | EntityNotFoundException ex) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("statusCode", StatusCodes.BAD_REQUEST.name());
+            errorResponse.put("statusMessage", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        } catch (Exception ex) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("statusCode", StatusCodes.INTERNAL_ERROR.name());
+            errorResponse.put("statusMessage", "An error occurred while canceling the voucher");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
     @PatchMapping("/{voucherId}/hot-status")
     @PreAuthorize("hasAuthority('MANAGER_UPDATE')")
     public ResponseEntity<Map<String, String>> changeHotStatus(
@@ -149,8 +174,8 @@ public class VoucherController {
             @RequestParam(required = false) String tourType,
             @RequestParam(required = false) String transferType,
             @RequestParam(required = false) String hotelType,
-            @RequestParam(required = false) Double minPrice,  
-            @RequestParam(required = false) Double maxPrice) {  
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice) {
         List<VoucherDTO> vouchers = voucherService.filterVouchers(tourType, transferType, hotelType, minPrice, maxPrice);
         Map<String, Object> response = new HashMap<>();
         response.put("results", vouchers);

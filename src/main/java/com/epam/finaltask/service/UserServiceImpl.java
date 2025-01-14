@@ -30,8 +30,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO register(UserDTO userDTO) {
         if (userRepository.existsByUsername(userDTO.getUsername())) {
-            throw new EntityAlreadyExistsException("This username is already exist", StatusCodes.DUPLICATE_USERNAME.toString());
-
+            throw new EntityAlreadyExistsException("This username already exists", StatusCodes.DUPLICATE_USERNAME);
         }
         User userModel = userMapper.toUser(userDTO);
         userModel.setPassword(passwordEncoder.encode(userDTO.getPassword()));
@@ -82,6 +81,23 @@ public class UserServiceImpl implements UserService {
         }
 
         return userMapper.toUserDTO(user);
+    }
+
+    @Override
+    public UserDTO updateBalance(String username, double amount) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found", StatusCodes.ENTITY_NOT_FOUND));
+
+        double newBalance = user.getBalance() + amount;
+
+        if (newBalance < 0) {
+            throw new IllegalArgumentException("Balance cannot be negative");
+        }
+
+        user.setBalance(newBalance);
+        User updatedUser = userRepository.save(user);
+
+        return userMapper.toUserDTO(updatedUser);
     }
 
     @Override

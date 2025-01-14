@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="data:,">
     <style>
         body {
-            background-color: #f8f9fa; /* Світлий фон */
+            background-color: #f8f9fa;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -16,7 +17,7 @@
         }
         .card {
             width: 100%;
-            max-width: 400px; /* Фіксована ширина */
+            max-width: 400px;
             border: none;
             border-radius: 10px;
             padding: 20px;
@@ -44,43 +45,101 @@
             color: red;
             font-size: 0.875em;
             margin-top: 5px;
-            display: none; /* Приховати повідомлення про помилки */
+            display: none;
         }
     </style>
 </head>
 <body>
 <div class="card">
-    <h3 class="text-center">Sign Up</h3>
+    <div class="d-flex justify-content-end mb-3">
+        <select id="languageSelector" class="form-select form-select-sm" style="width: 5rem;">
+            <option value="en">EN</option>
+            <option value="uk">UA</option>
+        </select>
+    </div>
+    <h3 id="title" class="text-center">Sign Up</h3>
     <form id="signupForm">
         <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
+            <label for="username" class="form-label" id="usernameLabel">Username</label>
             <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
             <div id="usernameError" class="alert alert-danger error-message"></div>
         </div>
         <div class="mb-3">
-            <label for="phoneNumber" class="form-label">Phone Number</label>
+            <label for="phoneNumber" class="form-label" id="phoneNumberLabel">Phone Number</label>
             <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="Enter your phone number" required>
             <div id="phoneNumberError" class="alert alert-danger error-message"></div>
         </div>
         <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
+            <label for="password" class="form-label" id="passwordLabel">Password</label>
             <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
             <div id="passwordError" class="alert alert-danger error-message"></div>
         </div>
         <div class="d-grid">
-            <button type="submit" class="btn btn-primary">Sign Up</button>
+            <button type="submit" class="btn btn-primary" id="signupButton">Sign Up</button>
         </div>
     </form>
     <div class="text-center mt-3">
-        <a href="/view/login">Already have an account? Log in</a>
+        <a href="/view/login" id="loginLink">Already have an account? Log in</a>
     </div>
 </div>
 <script>
+    const translations = {
+        en: {
+            title: "Sign Up",
+            usernameLabel: "Username",
+            phoneNumberLabel: "Phone Number",
+            passwordLabel: "Password",
+            usernamePlaceholder: "Enter your username",
+            phoneNumberPlaceholder: "Enter your phone number",
+            passwordPlaceholder: "Enter your password",
+            signupButton: "Sign Up",
+            loginLink: "Already have an account? Log in",
+            errorOccurred: "An error occurred. Please try again.",
+        },
+        uk: {
+            title: "Реєстрація",
+            usernameLabel: "Ім'я користувача",
+            phoneNumberLabel: "Номер телефону",
+            passwordLabel: "Пароль",
+            usernamePlaceholder: "Введіть ваше ім'я користувача",
+            phoneNumberPlaceholder: "Введіть ваш номер телефону",
+            passwordPlaceholder: "Введіть ваш пароль",
+            signupButton: "Зареєструватись",
+            loginLink: "Вже маєте обліковий запис? Увійти",
+            errorOccurred: "Сталася помилка. Будь ласка, спробуйте ще раз.",
+        }
+    };
+
+    const updateLanguage = (language) => {
+        document.getElementById('title').textContent = translations[language].title;
+        document.getElementById('usernameLabel').textContent = translations[language].usernameLabel;
+        document.getElementById('phoneNumberLabel').textContent = translations[language].phoneNumberLabel;
+        document.getElementById('passwordLabel').textContent = translations[language].passwordLabel;
+        document.getElementById('username').placeholder = translations[language].usernamePlaceholder;
+        document.getElementById('phoneNumber').placeholder = translations[language].phoneNumberPlaceholder;
+        document.getElementById('password').placeholder = translations[language].passwordPlaceholder;
+        document.getElementById('signupButton').textContent = translations[language].signupButton;
+        document.getElementById('loginLink').textContent = translations[language].loginLink;
+    };
+
+    const setInitialLanguage = () => {
+        const savedLanguage = localStorage.getItem('language') || 'en';
+        document.getElementById('languageSelector').value = savedLanguage;
+        updateLanguage(savedLanguage);
+    };
+
+    document.getElementById('languageSelector').addEventListener('change', (e) => {
+        const selectedLanguage = e.target.value;
+        localStorage.setItem('language', selectedLanguage);
+        updateLanguage(selectedLanguage);
+    });
+
     document.getElementById('signupForm').addEventListener('submit', function (e) {
         e.preventDefault();
         const username = document.getElementById('username').value;
         const phoneNumber = document.getElementById('phoneNumber').value;
         const password = document.getElementById('password').value;
+        const selectedLanguage = document.getElementById('languageSelector').value;
 
         const usernameError = document.getElementById('usernameError');
         const phoneNumberError = document.getElementById('phoneNumberError');
@@ -93,38 +152,41 @@
         fetch('/auth/signup', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept-Language': selectedLanguage
             },
             body: JSON.stringify({ username, phoneNumber, password })
         })
             .then(response => response.json())
             .then(data => {
                 if (data.message === 'User registered successfully!') {
-                    alert('Registration successful!');
+                    alert(translations[selectedLanguage].signupSuccess || 'Registration successful!');
                     window.location.href = '/view/login';
                 } else {
                     if (data.errors) {
                         data.errors.forEach(err => {
-                            if (err.includes('Username')) {
+                            if (err.includes('Username') || err.includes('Ім\'я користувача')) {
                                 usernameError.textContent = err;
                                 usernameError.style.display = 'block';
-                            } else if (err.includes('Phone number')) {
+                            } else if (err.includes('Phone number') || err.includes('Номер телефону')) {
                                 phoneNumberError.textContent = err;
                                 phoneNumberError.style.display = 'block';
-                            } else if (err.includes('Password')) {
+                            } else if (err.includes('Password') || err.includes('Пароль')) {
                                 passwordError.textContent = err;
                                 passwordError.style.display = 'block';
                             }
                         });
                     } else {
-                        alert(data.message || 'Registration failed!');
+                        alert(data.message || translations[selectedLanguage].errorOccurred);
                     }
                 }
             })
-            .catch(error => {
-                alert('An error occurred. Please try again.');
+            .catch(() => {
+                alert(translations[selectedLanguage].errorOccurred);
             });
     });
+
+    setInitialLanguage();
 </script>
 </body>
 </html>

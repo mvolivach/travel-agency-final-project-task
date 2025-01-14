@@ -5,20 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="data:,">
     <style>
         body {
             background-color: #f5f5f5;
             color: #333;
         }
-        .card {
-            background-color: #e6e6e6;
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+        .voucher-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
         }
+
+        .voucher-table th, .voucher-table td {
+            padding: 12px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .voucher-table th {
+            background-color: #c7c5c5;
+        }
+
+        .voucher-table td button {
+            background-color: #e6e6e6;
+            border-radius: 20px;
+            padding: 5px 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 12px;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .voucher-table td button:hover {
+            background-color: #c7c5c5;
+            cursor: pointer;
+        }
+
         .navbar {
             background-color: #c7c5c5;
         }
+
         .btn-custom {
             background-color: #c7c5c5;
             text-transform: uppercase;
@@ -31,41 +60,29 @@
             background-color: #4a4a4a;
             cursor: pointer;
         }
-        .voucher-card {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 15px;
-            width: calc(33% - 20px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            height: 500px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+
+        .form-control-sm {
+            font-size: 12px;
+            padding: 0.5rem;
         }
-        .navbar .container-fluid {
-            display: flex;
-            justify-content: space-between;
-        }
-        .navbar .container-fluid button {
-            width: auto;
-        }
-        #vouchersList {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-        }
-        @media (max-width: 768px) {
-            .voucher-card {
-                width: calc(50% - 20px);
-            }
+        /* Style for the 'Add' button, to match 'Cancel Voucher' button */
+        .add-balance-btn {
+            background-color: #e6e6e6;
+            border-radius: 20px;
+            padding: 5px 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 12px;
+            border: none;
+            transition: background-color 0.3s ease;
+            margin-left: 10px;
         }
 
-        @media (max-width: 480px) {
-            .voucher-card {
-                width: 100%;
-            }
+        .add-balance-btn:hover {
+            background-color: #c7c5c5;
+            cursor: pointer;
         }
+
     </style>
 </head>
 <body>
@@ -83,17 +100,38 @@
             <li class="list-group-item">Username: <span id="username"></span></li>
             <li class="list-group-item">Role: <span id="role"></span></li>
             <li class="list-group-item">Account Status: <span id="status"></span></li>
-            <li class="list-group-item">Balance: $<span id="balance"></span></li>
+            <li class="list-group-item">Balance: $<span id="balance"></span>
+                <input type="number" id="balanceAmount" class="form-control form-control-sm" placeholder="Enter amount to add" step="0.01" style="display:inline-block; width:auto; margin-left:10px;">
+                <button class="btn add-balance-btn" id="updateBalanceButton" style="display:inline-block;">Add</button>
+            </li>
             <li class="list-group-item">Phone Number: <span id="phoneNumber"></span></li>
         </ul>
     </div>
 
     <div class="card p-4" style="width: 100%;">
         <h4 class="text-center mb-4">Your Vouchers</h4>
-        <div id="vouchersList">
-        </div>
+        <table class="voucher-table">
+            <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Tour Type</th>
+                <th>Transfer Type</th>
+                <th>Hotel Type</th>
+                <th>Status</th>
+                <th>Arrival Date</th>
+                <th>Eviction Date</th>
+                <th>Hot</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody id="vouchersList">
+            </tbody>
+        </table>
     </div>
 </div>
+
 
 <script>
     const token = localStorage.getItem('token');
@@ -120,6 +158,35 @@
                 document.getElementById('balance').textContent = user.balance.toFixed(2);
                 document.getElementById('phoneNumber').textContent = user.phoneNumber;
 
+                document.getElementById('updateBalanceButton').addEventListener('click', () => {
+                    const amount = parseFloat(document.getElementById('balanceAmount').value);
+                    if (isNaN(amount) || amount <= 0) {
+                        alert('Please enter a valid amount.');
+                        return;
+                    }
+
+                    fetch(`/users/${username}/balance?amount=${amount}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(updateData => {
+                            if (updateData.statusCode === 'OK') {
+                                document.getElementById('balance').textContent = updateData.data.balance.toFixed(2);
+                                alert('Balance updated successfully!');
+                            } else {
+                                alert(`Failed to update balance: ${updateData.statusMessage}`);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error updating balance:', error);
+                            alert('An error occurred while updating the balance.');
+                        });
+                });
+
                 fetch(`/vouchers/${user.id}`, {
                     method: 'GET',
                     headers: {
@@ -132,24 +199,26 @@
                         const vouchersList = document.getElementById('vouchersList');
                         if (voucherData.results.length > 0) {
                             voucherData.results.forEach(voucher => {
-                                const voucherCard = document.createElement('div');
-                                voucherCard.classList.add('voucher-card');
-                                voucherCard.innerHTML = `
-                                        <h5>${voucher.title}</h5>
-                                        <p><strong>Description:</strong> ${voucher.description}</p>
-                                        <p><strong>Price:</strong> $${voucher.price.toFixed(2)}</p>
-                                        <p><strong>Tour Type:</strong> ${voucher.tourType}</p>
-                                        <p><strong>Transfer Type:</strong> ${voucher.transferType}</p>
-                                        <p><strong>Hotel Type:</strong> ${voucher.hotelType}</p>
-                                        <p><strong>Status:</strong> ${voucher.status}</p>
-                                        <p><strong>Arrival Date:</strong> ${voucher.arrivalDate}</p>
-                                        <p><strong>Eviction Date:</strong> ${voucher.evictionDate}</p>
-                                        <p><strong>Hot:</strong> ${voucher.isHot}</p>
-                                    `;
-                                vouchersList.appendChild(voucherCard);
+                                const voucherRow = document.createElement('tr');
+                                voucherRow.innerHTML = `
+                                    <td>${voucher.title}</td>
+                                    <td>${voucher.description}</td>
+                                    <td>$${voucher.price.toFixed(2)}</td>
+                                    <td>${voucher.tourType}</td>
+                                    <td>${voucher.transferType}</td>
+                                    <td>${voucher.hotelType}</td>
+                                    <td>${voucher.status}</td>
+                                    <td>${voucher.arrivalDate}</td>
+                                    <td>${voucher.evictionDate}</td>
+                                    <td>${voucher.isHot === 'true' ? 'Yes' : 'No'}</td>
+                                    <td>
+                                        ${voucher.status === 'PAID' ? `<button class="btn cancel-voucher-btn" data-voucher-id="${voucher.id}">Cancel Voucher</button>` : ''}
+                                    </td>
+                                `;
+                                vouchersList.appendChild(voucherRow);
                             });
                         } else {
-                            vouchersList.innerHTML = '<p class="text-center">No vouchers found.</p>';
+                            vouchersList.innerHTML = '<tr><td colspan="11" class="text-center">No vouchers found.</td></tr>';
                         }
                     })
                     .catch(error => {
@@ -168,6 +237,37 @@
             localStorage.clear();
             window.location.href = '/view/login';
         });
+
+    document.addEventListener('click', (event) => {
+        if (event.target.classList.contains('cancel-voucher-btn')) {
+            const voucherId = event.target.getAttribute('data-voucher-id');
+            const userId = localStorage.getItem('userId');
+
+            if (confirm('Are you sure you want to cancel this voucher?')) {
+                fetch(`/vouchers/cancel/${voucherId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.statusCode === 'OK') {
+                            alert('Voucher canceled successfully!');
+                            location.reload();
+                        } else {
+                            alert(`Failed to cancel voucher: ${data.statusMessage}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error canceling voucher:', error);
+                        alert('An error occurred while canceling the voucher.');
+                    });
+            }
+        }
+    });
 
     document.getElementById('logoutButton').addEventListener('click', () => {
         localStorage.removeItem('token');

@@ -14,20 +14,21 @@ import java.util.UUID;
 @Builder
 public class UserDTO {
     private UUID id;
-    @NotBlank(message = "Username cannot be blank")
-    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Username must contain only characters and numbers")
+
+    @NotBlank
+    @Pattern(regexp = "^[a-zA-Z0-9_]+$")
     private String username;
-    @NotBlank(message = "Password cannot be blank")
-    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d).*$",
-            message = "")
-    @Size(min = 7, max = 30, message = "Your password must contain upper and lower case letters and numbers, at least 7 and maximum 30 characters.Password cannot contains spaces")
+
+    @NotBlank
+    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d).*$")
+    @Size(min = 7, max = 30)
     private String password;
+
     private String role;
     private boolean accountStatus;
     private double balance;
-    @NotBlank(message = "Phone number cannot be blank")
-    @Pattern(regexp = "\\+?[0-9]{7,15}",
-            message = "Phone number must contain only numbers")
-    private String phoneNumber;
 
+    @NotBlank
+    @Pattern(regexp = "\\+?[0-9]{7,15}")
+    private String phoneNumber;
 }

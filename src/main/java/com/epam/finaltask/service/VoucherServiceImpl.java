@@ -32,6 +32,15 @@ public class VoucherServiceImpl implements VoucherService {
         Voucher existingVoucher = voucherRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new EntityNotFoundException("Voucher with Id " + id + " not found", StatusCodes.ENTITY_NOT_FOUND));
 
+        if ("CANCELED".equalsIgnoreCase(status) || "REGISTERED".equalsIgnoreCase(status)) {
+            User user = existingVoucher.getUser();
+            if (user != null) {
+                user.setBalance(user.getBalance() + existingVoucher.getPrice());
+                existingVoucher.setUser(null);
+                userRepository.save(user);
+            }
+        }
+
         try {
             VoucherStatus voucherStatus = VoucherStatus.valueOf(status.toUpperCase());
             existingVoucher.setStatus(voucherStatus);
@@ -40,8 +49,30 @@ public class VoucherServiceImpl implements VoucherService {
         }
 
         Voucher savedVoucher = voucherRepository.save(existingVoucher);
-
         return voucherMapper.toVoucherDTO(savedVoucher);
+    }
+
+    @Override
+    public void cancelVoucher(String voucherId, UUID userId) {
+        Voucher voucher = voucherRepository.findById(UUID.fromString(voucherId))
+                .orElseThrow(() -> new EntityNotFoundException("Voucher not found", StatusCodes.ENTITY_NOT_FOUND));
+
+        if (voucher.getUser() == null || !voucher.getUser().getId().equals(userId)) {
+            throw new IllegalStateException("You do not own this voucher");
+        }
+
+        if (voucher.getStatus() != VoucherStatus.PAID) {
+            throw new IllegalStateException("Only paid vouchers can be canceled");
+        }
+
+        User user = voucher.getUser();
+        user.setBalance(user.getBalance() + voucher.getPrice());
+        userRepository.save(user);
+
+        voucher.setUser(null);
+        voucher.setStatus(VoucherStatus.REGISTERED);
+
+        voucherRepository.save(voucher);
     }
 
 
@@ -104,6 +135,10 @@ public class VoucherServiceImpl implements VoucherService {
         Voucher existingVoucher = voucherRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new EntityNotFoundException("Voucher with Id " + id + " not found", StatusCodes.ENTITY_NOT_FOUND));
 
+        if (existingVoucher.getStatus() == VoucherStatus.PAID) {
+            throw new IllegalStateException("Voucher status is PAID and cannot be modified. Change the status first.");
+        }
+
         User user = null;
 
         if (voucherDTO.getUserId() != null) {
@@ -122,8 +157,13 @@ public class VoucherServiceImpl implements VoucherService {
     public void delete(String voucherId) {
         UUID id = UUID.fromString(voucherId);
 
-        if (voucherRepository.findById(id).isEmpty()) {
-            throw new EntityNotFoundException("Voucher with Id " + voucherId + " not found", StatusCodes.ENTITY_NOT_FOUND);
+        Voucher voucher = voucherRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Voucher with Id " + voucherId + " not found", StatusCodes.ENTITY_NOT_FOUND));
+
+        if (voucher.getStatus() == VoucherStatus.PAID && voucher.getUser() != null) {
+            User user = voucher.getUser();
+            user.setBalance(user.getBalance() + voucher.getPrice());
+            userRepository.save(user);
         }
 
         voucherRepository.deleteById(id);
@@ -133,7 +173,10 @@ public class VoucherServiceImpl implements VoucherService {
     public List<VoucherDTO> findAllByUserId(String userId) {
         List<Voucher> vouchers = voucherRepository.findAllByUserId(UUID.fromString(userId));
         return (vouchers != null && !vouchers.isEmpty()) ?
-                vouchers.stream().map(voucherMapper::toVoucherDTO).collect(Collectors.toList()) :
+                vouchers.stream()
+                        .sorted((v1, v2) -> Boolean.compare(v2.isHot(), v1.isHot()))
+                        .map(voucherMapper::toVoucherDTO)
+                        .collect(Collectors.toList()) :
                 Collections.emptyList();
     }
 
@@ -152,9 +195,11 @@ public class VoucherServiceImpl implements VoucherService {
                 .filter(v -> hotelType == null || v.getHotelType().name().equalsIgnoreCase(hotelType))
                 .filter(v -> minPrice == null || v.getPrice() >= minPrice)
                 .filter(v -> maxPrice == null || v.getPrice() <= maxPrice)
+                .sorted((v1, v2) -> Boolean.compare(v2.isHot(), v1.isHot()))
                 .map(voucherMapper::toVoucherDTO)
                 .collect(Collectors.toList());
     }
+
 
 
     @Override
@@ -194,6 +239,7 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public List<VoucherDTO> findAll() {
         return voucherRepository.findAll().stream()
+                .sorted((v1, v2) -> Boolean.compare(v2.isHot(), v1.isHot()))
                 .map(voucherMapper::toVoucherDTO)
                 .collect(Collectors.toList());
     }

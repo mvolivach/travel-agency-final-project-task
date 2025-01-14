@@ -103,6 +103,28 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+    @PatchMapping("/{username}/balance")
+    @PreAuthorize("hasAuthority('USER_UPDATE')")
+    public ResponseEntity<?> updateBalance(@PathVariable String username, @RequestParam double amount) {
+        try {
+            UserDTO updatedUser = userService.updateBalance(username, amount);
+            Map<String, Object> response = new HashMap<>();
+            response.put("statusCode", StatusCodes.OK.name());
+            response.put("statusMessage", "Balance updated successfully");
+            response.put("data", updatedUser);
+            return ResponseEntity.ok(response);
+        } catch (EntityNotFoundException ex) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("statusCode", StatusCodes.NOT_FOUND.name());
+            response.put("statusMessage", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (IllegalArgumentException ex) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("statusCode", StatusCodes.INVALID_DATA.name());
+            response.put("statusMessage", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
     @GetMapping("/allUsers")
     @PreAuthorize("hasAuthority('ADMIN_READ')")
     public ResponseEntity<?> getAllUsers() {
