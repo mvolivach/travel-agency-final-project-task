@@ -274,6 +274,7 @@
         updateDropdown('hotelType', translations[language].options.hotelType);
         updateDropdown('status', translations[language].options.status);
     };
+    const languageSelect = document.getElementById('languageSelector');
     const updateLanguage = (language) => {
         document.getElementById('formTitle').textContent = translations[language].formTitle;
         document.getElementById('titleLabel').textContent = translations[language].titleLabel;
@@ -348,7 +349,8 @@
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept-Language': languageSelect.value
             },
             body: JSON.stringify(voucherData)
         })

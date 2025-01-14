@@ -333,8 +333,6 @@
         document.querySelectorAll('.order-btn').forEach(button => {
             button.textContent = translations[languageSelect.value].order;
         });
-
-
         updateFiltersLocalization(language);
     };
 
@@ -360,7 +358,8 @@
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept-Language': languageSelect.value
         }
     })
         .then(response => response.json())
@@ -393,7 +392,8 @@
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/json',
+                                'Accept-Language': languageSelect.value
                             },
                             body: JSON.stringify({ userId })
                         })
@@ -450,7 +450,8 @@
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept-Language': languageSelect.value
             }
         })
             .then(response => response.json())
@@ -481,7 +482,8 @@
                                 method: 'POST',
                                 headers: {
                                     'Authorization': `Bearer ${token}`,
-                                    'Content-Type': 'application/json'
+                                    'Content-Type': 'application/json',
+                                    'Accept-Language': languageSelect.value
                                 },
                                 body: JSON.stringify({ userId })
                             })

@@ -170,14 +170,7 @@
         }
     };
 
-    const getTranslation = (key, replacements = {}) => {
-        const language = localStorage.getItem('language') || 'en';
-        let translation = translations[language][key] || key;
-        Object.keys(replacements).forEach(k => {
-            translation = translation.replace(`{${k}}`, replacements[k]);
-        });
-        return translation;
-    };
+    const languageSelect = document.getElementById('languageSelect');
     const updateLanguage = (language) => {
         document.getElementById('voucherButton').textContent = translations[language].newVoucher;
         document.getElementById('usersButton').textContent = translations[language].users;
@@ -233,8 +226,8 @@
             if (voucherData.results.length > 0) {
                 voucherData.results.forEach(voucher => {
                     const voucherRow = document.createElement('tr');
-                    voucherRow.innerHTML = `
-                        <td>${voucher.title}</td>
+                    voucherRow.innerHTML =
+                        `<td>${voucher.title}</td>
                         <td>${voucher.description}</td>
                         <td>$${voucher.price.toFixed(2)}</td>
                         <td>${voucher.tourType}</td>
@@ -260,10 +253,9 @@
                             </div>
                         </td>
                         <td>
-                            <button class="btn btn-sm editVoucher" data-id="${voucher.id}">${getTranslation('edit')}</button>
-                             <button class="btn btn-sm deleteVoucher" data-id="${voucher.id}">${getTranslation('delete')}</button>
-                        </td>
-                    `;
+                            <button class="btn btn-sm editVoucher" data-id="${voucher.id}">${translations[languageSelect.value].edit}</button>
+                             <button class="btn btn-sm deleteVoucher" data-id="${voucher.id}">${translations[languageSelect.value].delete}</button>
+                        </td>`;
                     vouchersList.appendChild(voucherRow);
                 });
 
@@ -274,7 +266,7 @@
                         const status = voucherRow.querySelector('.status-select').value;
 
                         if (status === 'PAID') {
-                            alert(getTranslation('alertEditLock'));
+                            alert(translations[languageSelect.value].alertEditLock);
                         } else {
                             window.location.href = `/view/editVoucher/${voucherId}`;
                         }
@@ -298,7 +290,8 @@
                             method: 'PATCH',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/json',
+                                'Accept-Language': languageSelect.value
                             }
                         })
                             .then(response => {
@@ -308,11 +301,11 @@
                                 return response.json();
                             })
                             .then(data => {
-                                alert(getTranslation('alertStatusUpdateSuccess', { status: newStatus }));
+                                alert(translations[languageSelect.value].alertStatusUpdateSuccess.replace("{status}", newStatus));
                             })
                             .catch(error => {
                                 console.error('Error updating tour status:', error);
-                                alert(getTranslation('alertStatusUpdateFail'));
+                                alert(translations[languageSelect.value].alertStatusUpdateFail);
                             });
                     });
                 });
@@ -333,21 +326,21 @@
                             .then(data => {
                                 const updatedSelect = e.target;
                                 updatedSelect.value = newHotStatus.toString();
-                                alert(getTranslation('alertHotStatusUpdateSuccess', { status: newHotStatus ? 'Yes' : 'No' }));
+                                alert(translations[languageSelect.value].alertHotStatusUpdateSuccess.replace("{status}", newHotStatus ? 'Yes' : 'No'));
                             })
                             .catch(error => {
                                 console.error('Error updating hot status:', error);
-                                alert(getTranslation('alertHotStatusUpdateFail'));
+                                alert(translations[languageSelect.value].alertHotStatusUpdateFail);
                             });
                     });
                 });
             } else {
-                vouchersList.innerHTML = `<p class="text-center">${getTranslation('alertFetchFail')}</p>`;
+                vouchersList.innerHTML = `<p class="text-center">${translations[languageSelect.value].alertFetchFail}</p>`;
             }
         })
         .catch(error => {
             console.error('Error fetching vouchers:', error);
-            alert(getTranslation('alertFetchFail'));
+            alert(translations[languageSelect.value].alertFetchFail);
         });
 
     function deleteVoucher(voucherId) {
@@ -355,17 +348,18 @@
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept-Language': languageSelect.value
             }
         })
             .then(response => response.json())
             .then(data => {
-                alert(getTranslation('alertDeleteSuccess'));
+                alert(translations[languageSelect.value].alertDeleteSuccess);
                 loadVouchers(currentPage);
             })
             .catch(error => {
                 console.error('Error deleting voucher:', error);
-                alert(getTranslation('alertDeleteFail'));
+                alert(translations[languageSelect.value].alertDeleteFail);
             });
     }
 

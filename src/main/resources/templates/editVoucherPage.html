@@ -292,6 +292,7 @@
         updateDropdown('hotelType', translations[language].options.hotelType);
         updateDropdown('status', translations[language].options.status);
     };
+    const languageSelect = document.getElementById('languageSelector');
     const updateLanguage = (language) => {
         document.getElementById('formTitle').textContent = translations[language].formTitle;
         document.getElementById('titleLabel').textContent = translations[language].titleLabel;
@@ -330,12 +331,13 @@
     }
 
     const voucherId = window.location.pathname.split('/').pop();
-
+    const language = document.getElementById('languageSelector').value;
     fetch(`/vouchers/voucher/${voucherId}`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept-Language': languageSelect.value
         }
     })
         .then(response => response.json())
@@ -389,7 +391,8 @@
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept-Language': language
             },
             body: JSON.stringify(voucherData)
         })

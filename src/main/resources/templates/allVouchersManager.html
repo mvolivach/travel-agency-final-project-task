@@ -83,7 +83,7 @@
     </div>
 </nav>
 <div class="container py-5">
-    <h3 class="text-center mb-4">All Vouchers</h3>
+    <h3 class="text-center mb-4" id="allVouchersTitle">All Vouchers</h3>
     <table class="table voucher-table">
         <thead>
         <tr>
@@ -172,15 +172,6 @@
         updateLanguage(savedLanguage);
     };
 
-    const getTranslation = (key, replacements = {}) => {
-        const language = localStorage.getItem('language') || 'en';
-        let translation = translations[language][key] || key;
-        Object.keys(replacements).forEach(k => {
-            translation = translation.replace(`{${k}}`, replacements[k]);
-        });
-        return translation;
-    };
-
     document.getElementById('languageSelect').addEventListener('change', (e) => {
         const selectedLanguage = e.target.value;
         localStorage.setItem('language', selectedLanguage);
@@ -205,8 +196,8 @@
             if (voucherData.results.length > 0) {
                 voucherData.results.forEach(voucher => {
                     const voucherRow = document.createElement('tr');
-                    voucherRow.innerHTML = `
-                        <td>${voucher.title}</td>
+                    voucherRow.innerHTML =
+                        `<td>${voucher.title}</td>
                         <td>${voucher.description}</td>
                         <td>$${voucher.price.toFixed(2)}</td>
                         <td>${voucher.tourType}</td>
@@ -230,8 +221,7 @@
                                     <option value="false" ${voucher.isHot === 'false' ? 'selected' : ''}>No</option>
                                 </select>
                             </div>
-                        </td>
-                    `;
+                        </td>`;
                     vouchersList.appendChild(voucherRow);
                 });
 
@@ -244,7 +234,8 @@
                             method: 'PATCH',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/json',
+                                'Accept-Language': languageSelect.value
                             }
                         })
                             .then(response => {
@@ -254,10 +245,10 @@
                                 return response.json();
                             })
                             .then(() => {
-                                alert(getTranslation('statusUpdateSuccess', { status: newStatus }));
+                                alert(translations[languageSelect.value].statusUpdateSuccess.replace('{status}', newStatus));
                             })
                             .catch(() => {
-                                alert(getTranslation('statusUpdateFail'));
+                                alert(translations[languageSelect.value].statusUpdateFail);
                             });
                     });
                 });
@@ -271,7 +262,8 @@
                             method: 'PATCH',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/json',
+                                'Accept-Language': languageSelect.value
                             }
                         })
                             .then(response => {
@@ -281,20 +273,20 @@
                                 return response.json();
                             })
                             .then(() => {
-                                alert(getTranslation('hotUpdateSuccess', { hotStatus: newHotStatus ? 'Yes' : 'No' }));
+                                alert(translations[languageSelect.value].hotUpdateSuccess.replace('{hotStatus}', newHotStatus ? 'Yes' : 'No'));
                             })
                             .catch(() => {
-                                alert(getTranslation('hotUpdateFail'));
+                                alert(translations[languageSelect.value].hotUpdateFail);
                             });
                     });
                 });
 
             } else {
-                vouchersList.innerHTML = `<tr><td colspan="11" class="text-center">${getTranslation('noVouchers')}</td></tr>`;
+                vouchersList.innerHTML = `<tr><td colspan="11" class="text-center">${translations[languageSelect.value].noVouchers}</td></tr>`;
             }
         })
         .catch(() => {
-            alert(getTranslation('fetchError'));
+            alert(translations[languageSelect.value].fetchError);
         });
 
     document.getElementById('logoutButton').addEventListener('click', () => {
@@ -303,7 +295,5 @@
         window.location.href = '/view/login';
     });
 </script>
-
-
 </body>
 </html>
