@@ -19,5 +19,6 @@ public interface VoucherService {
     List<VoucherDTO> findAllByTransferType(String transferType);
     List<VoucherDTO> findAllByPrice(String price);
     List<VoucherDTO> findAllByHotelType(String hotelType);
+    List<VoucherDTO> filterVouchers(String tourType, String transferType,  String hotelType, Double minPrice, Double maxPrice);
     List<VoucherDTO> findAll();
 }

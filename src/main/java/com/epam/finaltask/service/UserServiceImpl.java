@@ -33,7 +33,6 @@ public class UserServiceImpl implements UserService {
             throw new EntityAlreadyExistsException("This username is already exist", StatusCodes.DUPLICATE_USERNAME.toString());
 
         }
-
         User userModel = userMapper.toUser(userDTO);
         userModel.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
@@ -85,21 +84,13 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserDTO(user);
     }
 
-
     @Override
     @Transactional
     public UserDTO changeAccountStatus(UserDTO userDTO) {
         User user = userRepository.findById(userDTO.getId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userDTO.getId()));
-
-        // Оновлюємо тільки статус
         user.setAccountStatus(userDTO.isAccountStatus());
-
-        User savedUser = userRepository.save(user); // Hibernate не зачепить інші поля
+        User savedUser = userRepository.save(user);
         return userMapper.toUserDTO(savedUser);
     }
-
-
-
-
 }

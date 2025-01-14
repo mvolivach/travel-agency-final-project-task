@@ -7,14 +7,25 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f5f5f5;
-            color: #333;
+            background-color: #f8f9fa; /* Світлий фон */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
         .card {
-            background-color: #e6e6e6;
+            width: 100%;
+            max-width: 400px; /* Фіксована ширина */
             border: none;
             border-radius: 10px;
+            padding: 20px;
+            background-color: #e6e6e6;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card h3 {
+            font-weight: bold;
+            margin-bottom: 20px;
         }
         .btn-primary {
             background-color: #5a5a5a;
@@ -29,32 +40,39 @@
         a:hover {
             color: #333;
         }
+        .error-message {
+            color: red;
+            font-size: 0.875em;
+            margin-top: 5px;
+            display: none; /* Приховати повідомлення про помилки */
+        }
     </style>
 </head>
 <body>
-<div class="container d-flex justify-content-center align-items-center vh-100">
-    <div class="card p-4" style="width: 25rem;">
-        <h3 class="text-center mb-4">Sign Up</h3>
-        <form id="signupForm">
-            <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
-            </div>
-            <div class="mb-3">
-                <label for="phoneNumber" class="form-label">Phone Number</label>
-                <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="Enter your phone number" required>
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
-            </div>
-            <div class="d-grid">
-                <button type="submit" class="btn btn-primary">Sign Up</button>
-            </div>
-        </form>
-        <div class="text-center mt-3">
-            <a href="/view/login">Already have an account? Log in</a>
+<div class="card">
+    <h3 class="text-center">Sign Up</h3>
+    <form id="signupForm">
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
+            <div id="usernameError" class="alert alert-danger error-message"></div>
         </div>
+        <div class="mb-3">
+            <label for="phoneNumber" class="form-label">Phone Number</label>
+            <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="Enter your phone number" required>
+            <div id="phoneNumberError" class="alert alert-danger error-message"></div>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+            <div id="passwordError" class="alert alert-danger error-message"></div>
+        </div>
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Sign Up</button>
+        </div>
+    </form>
+    <div class="text-center mt-3">
+        <a href="/view/login">Already have an account? Log in</a>
     </div>
 </div>
 <script>
@@ -63,6 +81,14 @@
         const username = document.getElementById('username').value;
         const phoneNumber = document.getElementById('phoneNumber').value;
         const password = document.getElementById('password').value;
+
+        const usernameError = document.getElementById('usernameError');
+        const phoneNumberError = document.getElementById('phoneNumberError');
+        const passwordError = document.getElementById('passwordError');
+
+        usernameError.style.display = 'none';
+        phoneNumberError.style.display = 'none';
+        passwordError.style.display = 'none';
 
         fetch('/auth/signup', {
             method: 'POST',
@@ -77,10 +103,27 @@
                     alert('Registration successful!');
                     window.location.href = '/view/login';
                 } else {
-                    alert(data.message || 'Registration failed!');
+                    if (data.errors) {
+                        data.errors.forEach(err => {
+                            if (err.includes('Username')) {
+                                usernameError.textContent = err;
+                                usernameError.style.display = 'block';
+                            } else if (err.includes('Phone number')) {
+                                phoneNumberError.textContent = err;
+                                phoneNumberError.style.display = 'block';
+                            } else if (err.includes('Password')) {
+                                passwordError.textContent = err;
+                                passwordError.style.display = 'block';
+                            }
+                        });
+                    } else {
+                        alert(data.message || 'Registration failed!');
+                    }
                 }
             })
-            .catch(error => alert('An error occurred. Please try again.'));
+            .catch(error => {
+                alert('An error occurred. Please try again.');
+            });
     });
 </script>
 </body>

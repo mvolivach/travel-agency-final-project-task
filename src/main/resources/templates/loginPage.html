@@ -29,6 +29,9 @@
         a:hover {
             color: #333;
         }
+        .alert {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -44,6 +47,7 @@
                 <label for="password" class="form-label">Password</label>
                 <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
             </div>
+            <div id="alertMessage" class="alert alert-danger"></div>
             <div class="d-grid">
                 <button type="submit" class="btn btn-primary">Login</button>
             </div>
@@ -53,11 +57,13 @@
         </div>
     </div>
 </div>
+
 <script>
     document.getElementById('loginForm').addEventListener('submit', function (e) {
         e.preventDefault();
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
+        const alertMessage = document.getElementById('alertMessage');
 
         fetch('/auth/signin', {
             method: 'POST',
@@ -86,11 +92,16 @@
                         window.location.href = '/view/login';
                     }
                 } else {
-                    alert('Login failed!');
+                    alertMessage.textContent = data.message || 'Login failed!';
+                    alertMessage.style.display = 'block';
                 }
             })
-            .catch(error => alert('An error occurred. Please try again.'));
+            .catch(error => {
+                alertMessage.textContent = 'An error occurred. Please try again.';
+                alertMessage.style.display = 'block';
+            });
     });
+
 </script>
 </body>
 </html>

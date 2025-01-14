@@ -129,8 +129,6 @@ public class VoucherServiceImpl implements VoucherService {
         voucherRepository.deleteById(id);
     }
 
-
-
     @Override
     public List<VoucherDTO> findAllByUserId(String userId) {
         List<Voucher> vouchers = voucherRepository.findAllByUserId(UUID.fromString(userId));
@@ -145,6 +143,19 @@ public class VoucherServiceImpl implements VoucherService {
                 .map(voucherMapper::toVoucherDTO)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<VoucherDTO> filterVouchers(String tourType, String transferType, String hotelType, Double minPrice, Double maxPrice) {
+        return voucherRepository.findAll().stream()
+                .filter(v -> tourType == null || v.getTourType().name().equalsIgnoreCase(tourType))
+                .filter(v -> transferType == null || v.getTransferType().name().equalsIgnoreCase(transferType))
+                .filter(v -> hotelType == null || v.getHotelType().name().equalsIgnoreCase(hotelType))
+                .filter(v -> minPrice == null || v.getPrice() >= minPrice)
+                .filter(v -> maxPrice == null || v.getPrice() <= maxPrice)
+                .map(voucherMapper::toVoucherDTO)
+                .collect(Collectors.toList());
+    }
+
 
     @Override
     public List<VoucherDTO> findAllByTransferType(String transferType) {

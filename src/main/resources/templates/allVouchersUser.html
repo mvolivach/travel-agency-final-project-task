@@ -11,58 +11,35 @@
             color: #333;
         }
 
-        .voucher-card {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .voucher-table {
             width: 100%;
-            max-width: 350px;
-            height: auto;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            margin-top: 20px;
         }
 
-        .voucher-card h5 {
-            margin-bottom: 10px;
+        .voucher-table th, .voucher-table td {
+            padding: 12px;
+            text-align: center;
+            vertical-align: middle;
         }
 
-        .voucher-card p {
-            margin: 5px 0;
+        .voucher-table th {
+            background-color: #c7c5c5;
         }
 
-        .voucher-card .btn {
+        .voucher-table td button {
             background-color: #e6e6e6;
             border-radius: 20px;
             padding: 5px 10px;
             text-transform: uppercase;
             font-weight: bold;
             font-size: 12px;
-            margin-bottom: 10px;
             border: none;
             transition: background-color 0.3s ease;
         }
 
-        .voucher-card .btn:hover {
+        .voucher-table td button:hover {
             background-color: #c7c5c5;
             cursor: pointer;
-        }
-
-        .voucher-card .voucher-buttons {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-        }
-
-        .voucher-card .voucher-buttons .btn {
-            width: 48%;
-            margin-bottom: 5px;
-        }
-
-        .voucher-card .voucher-buttons .btn:last-child {
-            margin-right: 0;
         }
 
         .navbar {
@@ -71,10 +48,10 @@
 
         .btn-custom {
             background-color: #c7c5c5;
-            border-radius: 0;
-            padding: 10px 20px;
             text-transform: uppercase;
             font-weight: bold;
+            border-radius: 20px;
+            transition: background-color 0.3s ease;
         }
 
         .btn-custom:hover {
@@ -82,26 +59,17 @@
             cursor: pointer;
         }
 
-        #vouchersList {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            padding: 0 10px;
+        .form-control-sm {
+            font-size: 12px;
+            padding: 0.5rem;
         }
-
-        @media (max-width: 768px) {
-            .voucher-card {
-                width: 100%;
-                max-width: none;
-            }
+        .filter-form{
+            padding: 10px 10px;
         }
-
-        @media (max-width: 480px) {
-            .voucher-card {
-                width: 100%;
-                max-width: none;
-            }
+        .filter-form select,
+        .filter-form input {
+            width: 100%;
+            margin: 0;
         }
     </style>
 </head>
@@ -112,12 +80,76 @@
         <button class="btn btn-custom" id="logoutButton">Logout</button>
     </div>
 </nav>
-
-<div class="container d-flex flex-column align-items-center vh-100 py-5">
+<div class="filter-form mb-4">
+    <form id="filterForm" class="d-flex flex-wrap gap-3 justify-content-between">
+        <div class="flex-fill">
+            <select class="form-select form-control-sm" id="tourTypeFilter">
+                <option value="">Tour Type</option>
+                <option value="HEALTH">Health</option>
+                <option value="SPORTS">Sports</option>
+                <option value="LEISURE">Leisure</option>
+                <option value="SAFARI">Safari</option>
+                <option value="WINE">Wine</option>
+                <option value="ECO">Eco</option>
+                <option value="ADVENTURE">Adventure</option>
+                <option value="CULTURAL">Cultural</option>
+            </select>
+        </div>
+        <div class="flex-fill">
+            <select class="form-select form-control-sm" id="transferTypeFilter">
+                <option value="">Transfer Type</option>
+                <option value="BUS">Bus</option>
+                <option value="TRAIN">Train</option>
+                <option value="PLANE">Plane</option>
+                <option value="SHIP">Ship</option>
+                <option value="PRIVATE_CAR">Private Car</option>
+                <option value="JEEPS">Jeeps</option>
+                <option value="MINIBUS">Minibus</option>
+                <option value="ELECTRICAL_CARS">Electrical Cars</option>
+            </select>
+        </div>
+        <div class="flex-fill">
+            <select class="form-select form-control-sm" id="hotelTypeFilter">
+                <option value="">Hotel Type</option>
+                <option value="ONE_STAR">1 Star</option>
+                <option value="TWO_STARS">2 Stars</option>
+                <option value="THREE_STARS">3 Stars</option>
+                <option value="FOUR_STARS">4 Stars</option>
+                <option value="FIVE_STARS">5 Stars</option>
+            </select>
+        </div>
+        <div class="flex-fill">
+            <input type="number" id="minPriceFilter" class="form-control form-control-sm" placeholder="Min Price">
+        </div>
+        <div class="flex-fill">
+            <input type="number" id="maxPriceFilter" class="form-control form-control-sm" placeholder="Max Price">
+        </div>
+        <div class="flex-fill">
+            <button type="submit" class="btn btn-custom btn-sm w-100">Apply Filters</button>
+        </div>
+    </form>
+</div>
+<div class="container">
     <h3 class="text-center mb-4">All Vouchers</h3>
-    <div id="vouchersList">
-
-    </div>
+    <table class="table table-striped voucher-table">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Tour Type</th>
+            <th>Transfer Type</th>
+            <th>Hotel Type</th>
+            <th>Status</th>
+            <th>Arrival Date</th>
+            <th>Eviction Date</th>
+            <th>Hot</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="vouchersList">
+        </tbody>
+    </table>
 </div>
 
 <script>
@@ -140,24 +172,23 @@
             const vouchersList = document.getElementById('vouchersList');
             if (voucherData.results.length > 0) {
                 voucherData.results.forEach(voucher => {
-                    const voucherCard = document.createElement('div');
-                    voucherCard.classList.add('voucher-card');
-                    voucherCard.innerHTML = `
-                        <h5>${voucher.title}</h5>
-                        <p><strong>Description:</strong> ${voucher.description}</p>
-                        <p><strong>Price:</strong> $${voucher.price.toFixed(2)}</p>
-                        <p><strong>Tour Type:</strong> ${voucher.tourType}</p>
-                        <p><strong>Transfer Type:</strong> ${voucher.transferType}</p>
-                        <p><strong>Hotel Type:</strong> ${voucher.hotelType}</p>
-                        <p><strong>Status:</strong> ${voucher.status}</p>
-                        <p><strong>Arrival Date:</strong> ${voucher.arrivalDate}</p>
-                        <p><strong>Eviction Date:</strong> ${voucher.evictionDate}</p>
-                        <p><strong>Hot:</strong> ${voucher.isHot}</p>
-                        <button class="btn btn-primary order-btn" data-voucher-id="${voucher.id}" data-user-id="${userId}">Order Voucher</button>
+                    const voucherRow = document.createElement('tr');
+                    voucherRow.innerHTML = `
+                        <td>${voucher.title}</td>
+                        <td>${voucher.description}</td>
+                        <td>$${voucher.price.toFixed(2)}</td>
+                        <td>${voucher.tourType}</td>
+                        <td>${voucher.transferType}</td>
+                        <td>${voucher.hotelType}</td>
+                        <td>${voucher.status}</td>
+                        <td>${voucher.arrivalDate}</td>
+                        <td>${voucher.evictionDate}</td>
+                        <td>${voucher.isHot ? 'Yes' : 'No'}</td>
+                        <td><button class="btn btn-primary order-btn" data-voucher-id="${voucher.id}" data-user-id="${userId}">Order</button></td>
                     `;
-                    vouchersList.appendChild(voucherCard);
+                    vouchersList.appendChild(voucherRow);
 
-                    voucherCard.querySelector('.order-btn').addEventListener('click', () => {
+                    voucherRow.querySelector('.order-btn').addEventListener('click', () => {
                         fetch(`/vouchers/order/${voucher.id}`, {
                             method: 'POST',
                             headers: {
@@ -180,23 +211,105 @@
                     });
                 });
             } else {
-                vouchersList.innerHTML = '<p class="text-center">No vouchers found.</p>';
+                vouchersList.innerHTML = '<tr><td colspan="11" class="text-center">No vouchers found.</td></tr>';
             }
         })
         .catch(error => {
             console.error('Error fetching vouchers:', error);
             alert('Failed to load vouchers.');
         });
+
     document.getElementById('logoutButton').addEventListener('click', () => {
         localStorage.removeItem('token');
         localStorage.removeItem('username');
         window.location.href = '/view/login';
     });
-    document.getElementById('accountButton').addEventListener('click', () => {
-        window.location.href = '/view/user/${userId}';
-    });
-</script>
 
+    document.getElementById('accountButton').addEventListener('click', () => {
+        window.location.href = `/view/user/${userId}`;
+    });
+
+    document.getElementById('filterForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const tourType = document.getElementById('tourTypeFilter').value;
+        const transferType = document.getElementById('transferTypeFilter').value;
+        const hotelType = document.getElementById('hotelTypeFilter').value;
+        const minPrice = document.getElementById('minPriceFilter').value;
+        const maxPrice = document.getElementById('maxPriceFilter').value;
+
+        const queryParams = new URLSearchParams();
+
+        if (tourType) queryParams.append('tourType', tourType);
+        if (transferType) queryParams.append('transferType', transferType);
+        if (hotelType) queryParams.append('hotelType', hotelType);
+        if (minPrice) queryParams.append('minPrice', minPrice);
+        if (maxPrice) queryParams.append('maxPrice', maxPrice);
+
+        fetch(`/vouchers/filter?${queryParams.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(voucherData => {
+                const vouchersList = document.getElementById('vouchersList');
+                vouchersList.innerHTML = '';
+                if (voucherData.results.length > 0) {
+                    voucherData.results.forEach(voucher => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                        <td>${voucher.title}</td>
+                        <td>${voucher.description}</td>
+                        <td>$${voucher.price.toFixed(2)}</td>
+                        <td>${voucher.tourType}</td>
+                        <td>${voucher.transferType}</td>
+                        <td>${voucher.hotelType}</td>
+                        <td>${voucher.status}</td>
+                        <td>${voucher.arrivalDate}</td>
+                        <td>${voucher.evictionDate}</td>
+                        <td>${voucher.isHot}</td>
+                        <td><button class="btn btn-primary order-btn" data-voucher-id="${voucher.id}" data-user-id="${userId}">Order</button></td>
+                    `;
+                        vouchersList.appendChild(row);
+                    });
+                    const orderButtons = document.querySelectorAll('.order-btn');
+                    orderButtons.forEach(button => {
+                        button.addEventListener('click', () => {
+                            const voucherId = button.getAttribute('data-voucher-id');
+                            fetch(`/vouchers/order/${voucherId}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ userId })
+                            })
+                                .then(response => {
+                                    if (response.ok) {
+                                        alert('Voucher successfully ordered!');
+                                        location.reload();
+                                    } else {
+                                        response.json().then(data => {
+                                            alert(data.statusMessage || 'Order failed.');
+                                        });
+                                    }
+                                })
+                                .catch(error => console.error('Error ordering voucher:', error));
+                        });
+                    });
+                } else {
+                    vouchersList.innerHTML = '<tr><td colspan="11" class="text-center">No vouchers found.</td></tr>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching vouchers:', error);
+            });
+    });
+
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

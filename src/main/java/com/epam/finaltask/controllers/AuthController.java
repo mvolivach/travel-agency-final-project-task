@@ -1,6 +1,7 @@
 package com.epam.finaltask.controllers;
 
 import com.epam.finaltask.dto.UserDTO;
+import com.epam.finaltask.exception.EntityNotFoundException;
 import com.epam.finaltask.models.Role;
 import com.epam.finaltask.models.User;
 import com.epam.finaltask.auth.request.LoginRequest;
@@ -17,9 +18,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -41,45 +44,64 @@ public class AuthController {
 
   @PostMapping("/signin")
   public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-    Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+    User user = userRepository.findByUsername(loginRequest.getUsername())
+            .orElse(null);
 
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-    String jwt = jwtUtils.generateJwtToken(authentication);
+    if (user == null) {
+      return ResponseEntity
+              .badRequest()
+              .body(new MessageResponse("Invalid username or password"));
+    }
 
-    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-    List<String> permissions = userDetails.getAuthorities().stream()
-            .map(item -> item.getAuthority())
-            .collect(Collectors.toList());
+    if (!user.isAccountStatus()) {
+      return ResponseEntity
+              .badRequest()
+              .body(new MessageResponse("Your account is blocked by administrator"));
+    }
 
-    UserDTO userDTO = UserDTO.builder()
-            .id(userDetails.getId())
-            .username(userDetails.getUsername())
-            .phoneNumber(userDetails.getPhoneNumber())
-            .role(permissions.isEmpty() ? "USER" : permissions.get(0))
-            .accountStatus(true)
-            .balance(0.0)
-            .build();
+    try {
+      Authentication authentication = authenticationManager.authenticate(
+              new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-    return ResponseEntity.ok(new JwtResponse(jwt,
-            userDetails.getId(),
-            userDetails.getUsername(),
-            userDetails.getPhoneNumber(),
-            permissions));
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+      String jwt = jwtUtils.generateJwtToken(authentication);
+
+      UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+      List<String> permissions = userDetails.getAuthorities().stream()
+              .map(item -> item.getAuthority())
+              .collect(Collectors.toList());
+
+      return ResponseEntity.ok(new JwtResponse(jwt,
+              userDetails.getId(),
+              userDetails.getUsername(),
+              userDetails.getPhoneNumber(),
+              permissions));
+    } catch (Exception e) {
+      return ResponseEntity
+              .badRequest()
+              .body(new MessageResponse("Invalid username or password"));
+    }
   }
 
   @PostMapping("/signup")
-  public ResponseEntity<?> registerUser(@Valid @RequestBody UserDTO userDTO) {
+  public ResponseEntity<?> registerUser(@Valid @RequestBody UserDTO userDTO, BindingResult bindingResult) {
+    if (bindingResult.hasErrors()) {
+      List<String> errors = bindingResult.getFieldErrors().stream()
+              .map(error -> error.getDefaultMessage())
+              .collect(Collectors.toList());
+      return ResponseEntity.badRequest().body(Map.of("errors", errors));
+    }
+
     if (userRepository.existsByUsername(userDTO.getUsername())) {
       return ResponseEntity
               .badRequest()
-              .body(new MessageResponse("Error: Username is already taken!"));
+              .body(Map.of("errors", List.of("Username is already taken!")));
     }
 
     if (userRepository.existsByPhoneNumber(userDTO.getPhoneNumber())) {
       return ResponseEntity
               .badRequest()
-              .body(new MessageResponse("Error: Phone number is already in use!"));
+              .body(Map.of("errors", List.of("Phone number is already in use!")));
     }
 
     User user = new User();
@@ -92,7 +114,7 @@ public class AuthController {
       try {
         user.setRole(Role.valueOf(userDTO.getRole().toUpperCase()));
       } catch (IllegalArgumentException e) {
-        return ResponseEntity.badRequest().body(new MessageResponse("Error: Invalid role specified!"));
+        return ResponseEntity.badRequest().body(Map.of("errors", List.of("Invalid role specified!")));
       }
     } else {
       user.setRole(Role.USER);
@@ -102,4 +124,5 @@ public class AuthController {
 
     return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
   }
+
 }

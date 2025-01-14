@@ -50,6 +50,6 @@ public class PageController {
     }
     @GetMapping("/vouchersManager")
     public String vouchersManager() {
-        return "vouchersManagerPage";
+        return "allVouchersManager";
     }
 }

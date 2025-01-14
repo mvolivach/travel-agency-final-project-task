@@ -25,6 +25,7 @@ public class UserDTO {
     private String role;
     private boolean accountStatus;
     private double balance;
+    @NotBlank(message = "Phone number cannot be blank")
     @Pattern(regexp = "\\+?[0-9]{7,15}",
             message = "Phone number must contain only numbers")
     private String phoneNumber;

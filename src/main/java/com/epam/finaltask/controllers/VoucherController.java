@@ -142,4 +142,20 @@ public class VoucherController {
         response.put("statusMessage", "Voucher hot status successfully changed to " + hotStatus);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/filter")
+    @PreAuthorize("hasAuthority('USER_READ') or hasAuthority('ADMIN_READ') or hasAuthority('MANAGER_READ')")
+    public ResponseEntity<Map<String, Object>> filterVouchers(
+            @RequestParam(required = false) String tourType,
+            @RequestParam(required = false) String transferType,
+            @RequestParam(required = false) String hotelType,
+            @RequestParam(required = false) Double minPrice,  
+            @RequestParam(required = false) Double maxPrice) {  
+        List<VoucherDTO> vouchers = voucherService.filterVouchers(tourType, transferType, hotelType, minPrice, maxPrice);
+        Map<String, Object> response = new HashMap<>();
+        response.put("results", vouchers);
+        return ResponseEntity.ok(response);
+    }
+
+
 }
