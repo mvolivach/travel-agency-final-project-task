@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .card {
+            background-color: #e6e6e6;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .navbar {
+            background-color: #c7c5c5;
+        }
+        .btn-custom {
+            background-color: #c7c5c5;
+            border-radius: 0;
+            padding: 10px 20px;
+            text-transform: uppercase;
+            font-weight: bold;
+            width: 120px;
+        }
+        .btn-custom:hover {
+            background-color: #4a4a4a;
+            cursor: pointer;
+        }
+        .voucher-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 15px;
+            width: calc(33% - 20px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .navbar .container-fluid {
+            display: flex;
+            justify-content: space-between;
+        }
+        .navbar .container-fluid button {
+            width: auto;
+        }
+        #vouchersList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        @media (max-width: 768px) {
+            .voucher-card {
+                width: calc(50% - 20px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .voucher-card {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container-fluid">
+        <button class="btn btn-custom" id="vouchersButton">Vouchers</button>
+        <button class="btn btn-custom" id="logoutButton">Logout</button>
+    </div>
+</nav>
+
+<div class="container d-flex flex-column align-items-center vh-100 py-5">
+    <div class="card p-4 mb-4" style="width: 100%;">
+        <h3 class="text-center mb-4">User Profile</h3>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">Username: <span id="username"></span></li>
+            <li class="list-group-item">Role: <span id="role"></span></li>
+            <li class="list-group-item">Account Status: <span id="status"></span></li>
+            <li class="list-group-item">Balance: $<span id="balance"></span></li>
+            <li class="list-group-item">Phone Number: <span id="phoneNumber"></span></li>
+        </ul>
+    </div>
+
+    <div class="card p-4" style="width: 100%;">
+        <h4 class="text-center mb-4">Your Vouchers</h4>
+        <div id="vouchersList">
+        </div>
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+
+    if (!token || !username) {
+        window.location.href = '/view/login';
+    }
+
+    fetch(`/users/${username}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.statusCode === 'OK') {
+                const user = data.data;
+                document.getElementById('username').textContent = user.username;
+                document.getElementById('role').textContent = user.role;
+                document.getElementById('status').textContent = user.accountStatus ? 'Active' : 'Inactive';
+                document.getElementById('balance').textContent = user.balance.toFixed(2);
+                document.getElementById('phoneNumber').textContent = user.phoneNumber;
+
+                fetch(`/vouchers/${user.id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(voucherData => {
+                        const vouchersList = document.getElementById('vouchersList');
+                        if (voucherData.results.length > 0) {
+                            voucherData.results.forEach(voucher => {
+                                const voucherCard = document.createElement('div');
+                                voucherCard.classList.add('voucher-card');
+                                voucherCard.innerHTML = `
+                                        <h5>${voucher.title}</h5>
+                                        <p><strong>Description:</strong> ${voucher.description}</p>
+                                        <p><strong>Price:</strong> $${voucher.price.toFixed(2)}</p>
+                                        <p><strong>Tour Type:</strong> ${voucher.tourType}</p>
+                                        <p><strong>Transfer Type:</strong> ${voucher.transferType}</p>
+                                        <p><strong>Hotel Type:</strong> ${voucher.hotelType}</p>
+                                        <p><strong>Status:</strong> ${voucher.status}</p>
+                                        <p><strong>Arrival Date:</strong> ${voucher.arrivalDate}</p>
+                                        <p><strong>Eviction Date:</strong> ${voucher.evictionDate}</p>
+                                        <p><strong>Hot:</strong> ${voucher.isHot}</p>
+                                    `;
+                                vouchersList.appendChild(voucherCard);
+                            });
+                        } else {
+                            vouchersList.innerHTML = '<p class="text-center">No vouchers found.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching vouchers:', error);
+                        alert('Failed to load vouchers.');
+                    });
+            } else {
+                alert('Failed to load user data. Redirecting to login.');
+                localStorage.clear();
+                window.location.href = '/view/login';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching user data:', error);
+            alert('An error occurred. Please try again.');
+            localStorage.clear();
+            window.location.href = '/view/login';
+        });
+
+    document.getElementById('logoutButton').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        window.location.href = '/view/login';
+    });
+
+    document.getElementById('vouchersButton').addEventListener('click', () => {
+        window.location.href = '/view/allVouchersUser';
+    });
+</script>
+</body>
+</html>

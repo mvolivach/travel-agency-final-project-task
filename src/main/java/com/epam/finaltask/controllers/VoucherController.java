@@ -73,10 +73,6 @@ public class VoucherController {
         }
     }
 
-
-
-
-
     @GetMapping("/allVouchers")
     @PreAuthorize("hasAuthority('USER_READ') or hasAuthority('ADMIN_READ') or hasAuthority('MANAGER_READ')")
     public ResponseEntity<Map<String, Object>> findAllVouchers() {
@@ -85,7 +81,6 @@ public class VoucherController {
         response.put("results", vouchers);
         return ResponseEntity.ok(response);
     }
-
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ADMIN_CREATE')")
@@ -107,8 +102,6 @@ public class VoucherController {
         return ResponseEntity.ok(response);
     }
 
-
-
     @DeleteMapping("/{voucherId}")
     @PreAuthorize("hasAuthority('ADMIN_DELETE')")
     public ResponseEntity<Map<String, String>> deleteVoucherById(@PathVariable String voucherId) {
@@ -125,8 +118,6 @@ public class VoucherController {
             return ResponseEntity.status(404).body(errorResponse);
         }
     }
-
-
 
     @PatchMapping("/{voucherId}/status")
     @PreAuthorize("hasAuthority('MANAGER_UPDATE')")
@@ -151,6 +142,4 @@ public class VoucherController {
         response.put("statusMessage", "Voucher hot status successfully changed to " + hotStatus);
         return ResponseEntity.ok(response);
     }
-
-
 }

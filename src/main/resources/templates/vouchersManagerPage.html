@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager View - All Vouchers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .voucher-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 700px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .voucher-card h5 {
+            margin-bottom: 10px;
+        }
+
+        .voucher-card p {
+            margin: 5px 0;
+        }
+
+        .voucher-card .btn {
+            background-color: #e6e6e6;
+            border-radius: 20px;
+            padding: 5px 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 10px;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .voucher-card .btn:hover {
+            background-color: #c7c5c5;
+            cursor: pointer;
+        }
+
+        .voucher-card .voucher-buttons {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .voucher-card .voucher-buttons .btn {
+            width: 48%;
+            margin-bottom: 5px;
+        }
+
+        .voucher-card .voucher-buttons .btn:last-child {
+            margin-right: 0;
+        }
+
+        .navbar {
+            background-color: #c7c5c5;
+        }
+
+        .btn-custom {
+            background-color: #c7c5c5;
+            border-radius: 0;
+            padding: 10px 20px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .btn-custom:hover {
+            background-color: #4a4a4a;
+            cursor: pointer;
+        }
+
+        #vouchersList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .voucher-card {
+                width: calc(50% - 20px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .voucher-card {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container-fluid">
+        <button class="btn btn-custom ms-auto" id="logoutButton">Logout</button>
+    </div>
+</nav>
+<div class="container py-5">
+    <h3 class="text-center mb-4">All Vouchers</h3>
+    <div id="vouchersList">
+
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        window.location.href = '/view/login';
+    }
+
+    fetch('/vouchers/allVouchers', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => response.json())
+        .then(voucherData => {
+            const vouchersList = document.getElementById('vouchersList');
+            if (voucherData.results.length > 0) {
+                voucherData.results.forEach(voucher => {
+                    const voucherCard = document.createElement('div');
+                    voucherCard.classList.add('voucher-card');
+                    voucherCard.innerHTML = `
+                        <h5>${voucher.title}</h5>
+                        <p><strong>Description:</strong> ${voucher.description}</p>
+                        <p><strong>Price:</strong> $${voucher.price.toFixed(2)}</p>
+                        <p><strong>Tour Type:</strong> ${voucher.tourType}</p>
+                        <p><strong>Transfer Type:</strong> ${voucher.transferType}</p>
+                        <p><strong>Hotel Type:</strong> ${voucher.hotelType}</p>
+                        <p><strong>Status:</strong> ${voucher.status}</p>
+                        <p><strong>Arrival Date:</strong> ${voucher.arrivalDate}</p>
+                        <p><strong>Eviction Date:</strong> ${voucher.evictionDate}</p>
+                        <p><strong>Hot:</strong> ${voucher.isHot}</p>
+                        <div class="mt-3 voucher-buttons">
+                            <button class="btn btn-sm change-hot-status" data-id="${voucher.id}">Change Hot Status</button>
+                            <button class="btn btn-sm change-tour-status" data-id="${voucher.id}">Change Voucher Status</button>
+                        </div>
+                        <div class="mt-2 tour-status-form" style="display: none;">
+                            <select class="form-control form-control-sm new-tour-status">
+                                <option value="REGISTERED">Registered</option>
+                                <option value="PAID">Paid</option>
+                                <option value="CANCELED">Canceled</option>
+                            </select>
+                            <button class="btn btn-success btn-sm mt-2 save-tour-status" data-id="${voucher.id}">Save Status</button>
+                            <button class="btn btn-secondary btn-sm mt-2 cancel-tour-status">Cancel</button>
+                        </div>
+                        <div class="mt-2 hot-status-form" style="display: none;">
+                            <select class="form-control form-control-sm new-hot-status">
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                            <button class="btn btn-success btn-sm mt-2 save-hot-status" data-id="${voucher.id}">Save Hot Status</button>
+                            <button class="btn btn-secondary btn-sm mt-2 cancel-hot-status">Cancel</button>
+                        </div>
+                    `;
+                    vouchersList.appendChild(voucherCard);
+                });
+
+                document.querySelectorAll('.change-tour-status').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const form = e.target.closest('.voucher-card').querySelector('.tour-status-form');
+                        form.style.display = 'block';
+                    });
+                });
+
+                document.querySelectorAll('.cancel-tour-status').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const form = e.target.closest('.tour-status-form');
+                        form.style.display = 'none';
+                    });
+                });
+
+                document.querySelectorAll('.save-tour-status').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const voucherId = button.getAttribute('data-id');
+                        const newStatus = button.closest('.tour-status-form').querySelector('.new-tour-status').value;
+
+                        fetch(`/vouchers/${voucherId}/status?status=${newStatus}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                alert(`Tour status updated to "${newStatus}" successfully.`);
+                                location.reload();
+                            })
+                            .catch(error => {
+                                console.error('Error updating tour status:', error);
+                                alert('Failed to update tour status.');
+                            });
+                    });
+                });
+
+                document.querySelectorAll('.change-hot-status').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const form = e.target.closest('.voucher-card').querySelector('.hot-status-form');
+                        form.style.display = 'block';
+                    });
+                });
+
+                document.querySelectorAll('.cancel-hot-status').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const form = e.target.closest('.hot-status-form');
+                        form.style.display = 'none';
+                    });
+                });
+
+                document.querySelectorAll('.save-hot-status').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const voucherId = button.getAttribute('data-id');
+                        const newHotStatus = button.closest('.hot-status-form').querySelector('.new-hot-status').value;
+
+                        fetch(`/vouchers/${voucherId}/hot-status?hotStatus=${newHotStatus}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                alert(`Hot status updated to "${newHotStatus}" successfully.`);
+                                location.reload();
+                            })
+                            .catch(error => {
+                                console.error('Error updating hot status:', error);
+                                alert('Failed to update hot status.');
+                            });
+                    });
+                });
+            } else {
+                vouchersList.innerHTML = '<p class="text-center">No vouchers found.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching vouchers:', error);
+            alert('Failed to load vouchers.');
+        });
+
+    document.getElementById('logoutButton').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        window.location.href = '/view/login';
+    });
+</script>
+</body>
+</html>
