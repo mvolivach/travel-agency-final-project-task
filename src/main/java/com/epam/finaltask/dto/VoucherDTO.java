@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
-import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -14,16 +13,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class VoucherDTO {
-    @AssertTrue(message = "Arrival date cannot be in the past")
-    public boolean isArrivalDateValid() {
-        return arrivalDate == null || !arrivalDate.isBefore(LocalDate.now());
-    }
-
-    @AssertTrue(message = "Eviction date cannot be in the past")
-    public boolean isEvictionDateValid() {
-        return evictionDate == null || !evictionDate.isBefore(LocalDate.now());
-    }
-
     private String id;
 
     @NotEmpty(message = "Title cannot be empty")

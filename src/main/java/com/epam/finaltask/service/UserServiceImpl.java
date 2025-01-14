@@ -48,18 +48,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO updateUser(String username, UserDTO userDTO) {
-        User existingUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));
-
-        User updatedUser = userMapper.toUser(userDTO);
-        updatedUser.setId(existingUser.getId());
-
-        User savedUser = userRepository.save(updatedUser);
-        return userMapper.toUserDTO(savedUser);
-    }
-
-    @Override
     public UserDTO getUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));

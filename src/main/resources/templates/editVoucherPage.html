@@ -352,12 +352,12 @@
             document.getElementById('isHot').checked = data.isHot === true;
         })
         .catch(error => {
-            alert(translations[getCurrentLanguage()].alerts.loadError);
+            alert(translations[languageSelector.value].alerts.loadError);
         });
 
     document.getElementById('editVoucherForm').addEventListener('submit', function(event) {
         event.preventDefault();
-        const language = getCurrentLanguage();
+        const language = document.getElementById('languageSelector').value;
         const arrivalDate = new Date(document.getElementById('arrivalDate').value);
         const evictionDate = new Date(document.getElementById('evictionDate').value);
         const today = new Date();
