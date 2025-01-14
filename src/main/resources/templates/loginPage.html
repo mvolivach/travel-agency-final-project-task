@@ -39,7 +39,7 @@
 <div class="container d-flex justify-content-center align-items-center vh-100">
     <div class="card p-4" style="width: 25rem;">
         <div class="d-flex justify-content-end">
-            <select id="languageSelector" class="form-select form-select-sm" style="width: 5rem;">
+            <select id="languageSelect" class="form-select form-select-sm" style="width: 5rem;">
                 <option value="en">EN</option>
                 <option value="uk">UA</option>
             </select>
@@ -104,11 +104,11 @@
 
     const setInitialLanguage = () => {
         const savedLanguage = localStorage.getItem('language') || 'en';
-        document.getElementById('languageSelector').value = savedLanguage;
+        document.getElementById('languageSelect').value = savedLanguage;
         updateLanguage(savedLanguage);
     };
 
-    document.getElementById('languageSelector').addEventListener('change', (e) => {
+    document.getElementById('languageSelect').addEventListener('change', (e) => {
         const selectedLanguage = e.target.value;
         localStorage.setItem('language', selectedLanguage);
         updateLanguage(selectedLanguage);
@@ -119,7 +119,7 @@
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         const alertMessage = document.getElementById('alertMessage');
-        const selectedLanguage = document.getElementById('languageSelector').value;
+        const selectedLanguage = document.getElementById('languageSelect').value;
 
         fetch('/auth/signin', {
             method: 'POST',

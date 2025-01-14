@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,27 +30,18 @@ public class VoucherController {
     @Autowired
     private MessageSource messageSource;
 
-    @GetMapping
-    @PreAuthorize("hasAuthority('USER_READ') or hasAuthority('ADMIN_READ') or hasAuthority('MANAGER_READ')")
-    public ResponseEntity<Map<String, Object>> findAll(Locale locale) {
-        logger.info("Received request to find all vouchers.");
-        List<VoucherDTO> vouchers = voucherService.findAll();
-        logger.info("Found {} vouchers.", vouchers.size());
-        Map<String, Object> response = new HashMap<>();
-        response.put("results", vouchers);
-        response.put("statusMessage", messageSource.getMessage("voucher.find.all.success", null, locale));
-        return ResponseEntity.ok(response);
-    }
-
     @GetMapping("/{userId}")
     @PreAuthorize("hasAuthority('USER_READ') or hasAuthority('ADMIN_READ') or hasAuthority('MANAGER_READ')")
-    public ResponseEntity<Map<String, Object>> findAllByUserId(@PathVariable String userId, Locale locale) {
-        logger.info("Received request to find all vouchers for userId: {}.", userId);
-        List<VoucherDTO> vouchers = voucherService.findAllByUserId(userId);
-        logger.info("Found {} vouchers for userId: {}.", vouchers.size(), userId);
+    public ResponseEntity<Map<String, Object>> findAllByUserId(@PathVariable String userId, Locale locale, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        logger.info("Received request to find all vouchers for page {} with size {}", page, size);
+        Page<VoucherDTO> vouchersPage = voucherService.findAllByUserId(userId, PageRequest.of(page, size));
+        logger.info("Found {} vouchers on page {}.", vouchersPage.getContent().size(), page);
+
         Map<String, Object> response = new HashMap<>();
-        response.put("results", vouchers);
-        response.put("statusMessage", messageSource.getMessage("voucher.find.by.user.success", null, locale));
+        response.put("results", vouchersPage.getContent());
+        response.put("totalElements", vouchersPage.getTotalElements());
+        response.put("totalPages", vouchersPage.getTotalPages());
+        response.put("currentPage", vouchersPage.getNumber());
         return ResponseEntity.ok(response);
     }
 
@@ -93,14 +86,21 @@ public class VoucherController {
 
     @GetMapping("/allVouchers")
     @PreAuthorize("hasAuthority('USER_READ') or hasAuthority('ADMIN_READ') or hasAuthority('MANAGER_READ')")
-    public ResponseEntity<Map<String, Object>> findAllVouchers() {
-        logger.info("Received request to find all vouchers");
-        List<VoucherDTO> vouchers = voucherService.findAll();
-        logger.info("Found {} vouchers.", vouchers.size());
+    public ResponseEntity<Map<String, Object>> findAllVouchers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        logger.info("Received request to find all vouchers for page {} with size {}", page, size);
+        Page<VoucherDTO> vouchersPage = voucherService.findAll(PageRequest.of(page, size));
+        logger.info("Found {} vouchers on page {}.", vouchersPage.getContent().size(), page);
+
         Map<String, Object> response = new HashMap<>();
-        response.put("results", vouchers);
+        response.put("results", vouchersPage.getContent());
+        response.put("totalElements", vouchersPage.getTotalElements());
+        response.put("totalPages", vouchersPage.getTotalPages());
+        response.put("currentPage", vouchersPage.getNumber());
         return ResponseEntity.ok(response);
     }
+
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ADMIN_CREATE')")
@@ -224,14 +224,21 @@ public class VoucherController {
             @RequestParam(required = false) String hotelType,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @RequestHeader(name = "Accept-Language", required = false) Locale locale) {
-        logger.info("Request received to filter vouchers with parameters - tourType: {}, transferType: {}, hotelType: {}, minPrice: {}, maxPrice: {}",
-                tourType, transferType, hotelType, minPrice, maxPrice);
+        logger.info("Request received to filter vouchers with parameters - tourType: {}, transferType: {}, hotelType: {}, minPrice: {}, maxPrice: {}, page: {}, size: {}",
+                tourType, transferType, hotelType, minPrice, maxPrice, page, size);
         try {
-            List<VoucherDTO> vouchers = voucherService.filterVouchers(tourType, transferType, hotelType, minPrice, maxPrice);
+            Page<VoucherDTO> vouchersPage = voucherService.filterVouchers(tourType, transferType, hotelType, minPrice, maxPrice, PageRequest.of(page, size));
+            logger.info("Vouchers successfully filtered. Found {} results on page {}.", vouchersPage.getContent().size(), page);
+
             Map<String, Object> response = new HashMap<>();
-            response.put("results", vouchers);
-            logger.info("Vouchers successfully filtered. Total results: {}", vouchers.size());
+            response.put("results", vouchersPage.getContent());
+            response.put("totalElements", vouchersPage.getTotalElements());
+            response.put("totalPages", vouchersPage.getTotalPages());
+            response.put("currentPage", vouchersPage.getNumber());
+
             return ResponseEntity.ok(response);
         } catch (Exception ex) {
             logger.error("Error while filtering vouchers. Error: {}", ex.getMessage());

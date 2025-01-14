@@ -80,11 +80,11 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container-fluid">
-        <select id="languageSelect" class="form-select form-select-sm ms-auto" style="width: auto;">
-            <option value="en">English</option>
-            <option value="uk">Українська</option>
-        </select>
+    <div class="container-fluid d-flex">
+            <select id="languageSelect" class="form-select form-select-sm" style="width: auto;">
+                <option value="en">English</option>
+                <option value="uk">Українська</option>
+            </select>
         <button class="btn btn-custom ms-auto" id="logoutButton">Logout</button>
     </div>
 </nav>
@@ -157,6 +157,7 @@
         <tbody id="vouchersList">
         </tbody>
     </table>
+    <div id="paginationContainer" class="pagination d-flex justify-content-center mt-4"></div>
 </div>
 
 <script>
@@ -451,19 +452,83 @@
         });
     };
 
+    let currentPage = 0;
+    let totalPages = 0;
 
-    fetch('/vouchers/allVouchers', {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+    const renderPagination = () => {
+        const paginationContainer = document.getElementById('paginationContainer');
+        paginationContainer.innerHTML = '';
+
+        for (let i = 0; i < totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.classList.add('btn', 'btn-custom', 'mx-1');
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            }
+            pageButton.textContent = i + 1;
+
+            pageButton.addEventListener('click', () => {
+                if (i !== currentPage) {
+                    currentPage = i;
+                    if (isFilterActive) {
+                        fetchFilteredVouchers(i);
+                    } else {
+                        fetchVouchers(i);
+                    }
+                }
+            });
+
+            paginationContainer.appendChild(pageButton);
         }
-    })
-        .then(response => response.json())
-        .then(voucherData => renderVouchers(voucherData.results))
-        .catch(() => {
-            alert(translations[languageSelect.value].fetchError);
-        });
+    };
+
+    const fetchVouchers = (page = 0) => {
+        fetch(`/vouchers/allVouchers?page=${page}&size=2`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(voucherData => {
+                renderVouchers(voucherData.results, languageSelect.value);
+                currentPage = voucherData.currentPage;
+                totalPages = voucherData.totalPages;
+                renderPagination();
+            })
+            .catch(error => {
+                console.error('Error fetching vouchers:', error);
+                alert(translations[languageSelect.value].loadFailed);
+            });
+    };
+
+    fetchVouchers();
+
+    let isFilterActive = false;
+    let filterQueryParams = '';
+
+    const fetchFilteredVouchers = (page = 0) => {
+        fetch(`/vouchers/filter?page=${page}&size=2&${filterQueryParams}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Accept-Language': languageSelect.value
+            }
+        })
+            .then(response => response.json())
+            .then(voucherData => {
+                renderVouchers(voucherData.results, languageSelect.value);
+                currentPage = voucherData.currentPage;
+                totalPages = voucherData.totalPages;
+                renderPagination();
+            })
+            .catch(error => {
+                console.error('Error fetching filtered vouchers:', error);
+                alert(translations[languageSelect.value].loadFailed);
+            });
+    };
 
     document.getElementById('filterForm').addEventListener('submit', (e) => {
         e.preventDefault();
@@ -482,19 +547,10 @@
         if (minPrice) queryParams.append('minPrice', minPrice);
         if (maxPrice) queryParams.append('maxPrice', maxPrice);
 
-        fetch(`/vouchers/filter?${queryParams.toString()}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept-Language': languageSelect.value
-            }
-        })
-            .then(response => response.json())
-            .then(voucherData => renderVouchers(voucherData.results))
-            .catch(() => {
-                alert(translations[languageSelect.value].fetchError);
-            });
+        filterQueryParams = queryParams.toString();
+        isFilterActive = true;
+
+        fetchFilteredVouchers();
     });
 
     document.getElementById('logoutButton').addEventListener('click', () => {

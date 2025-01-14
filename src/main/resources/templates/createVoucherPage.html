@@ -59,7 +59,7 @@
             <button class="btn btn-custom" id="usersButton">Users</button>
             <button class="btn btn-custom" id="voucherButton">Vouchers</button>
         </div>
-        <select id="languageSelector" class="form-select w-auto">
+        <select id="languageSelect" class="form-select form-select-sm" style="width: auto;">
             <option value="en">English</option>
             <option value="uk">Українська</option>
         </select>
@@ -274,7 +274,7 @@
         updateDropdown('hotelType', translations[language].options.hotelType);
         updateDropdown('status', translations[language].options.status);
     };
-    const languageSelect = document.getElementById('languageSelector');
+    const languageSelect = document.getElementById('languageSelect');
     const updateLanguage = (language) => {
         document.getElementById('formTitle').textContent = translations[language].formTitle;
         document.getElementById('titleLabel').textContent = translations[language].titleLabel;
@@ -296,11 +296,11 @@
 
     const setInitialLanguage = () => {
         const savedLanguage = localStorage.getItem('language') || 'en';
-        document.getElementById('languageSelector').value = savedLanguage;
+        document.getElementById('languageSelect').value = savedLanguage;
         updateLanguage(savedLanguage);
     };
 
-    document.getElementById('languageSelector').addEventListener('change', (e) => {
+    document.getElementById('languageSelect').addEventListener('change', (e) => {
         const selectedLanguage = e.target.value;
         localStorage.setItem('language', selectedLanguage);
         updateLanguage(selectedLanguage);
@@ -319,7 +319,7 @@
         const evictionDate = document.getElementById('evictionDate').value;
 
         const today = new Date().toISOString().split('T')[0];
-        const language = document.getElementById('languageSelector').value;
+        const language = document.getElementById('languageSelect').value;
         const alerts = translations[language].alerts;
 
         if (arrivalDate < today) {

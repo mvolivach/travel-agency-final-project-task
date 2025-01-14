@@ -12,5 +12,4 @@ public interface VoucherRepository extends JpaRepository<Voucher, UUID> {
     List<Voucher> findAllByTransferType(TransferType transferType);
     List<Voucher> findAllByPrice(Double price);
     List<Voucher> findAllByHotelType(HotelType hotelType);
-    List<Voucher> findAllByUserIdIsNull();
 }

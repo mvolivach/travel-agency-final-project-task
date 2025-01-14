@@ -70,7 +70,7 @@
             <button class="btn btn-custom" id="usersButton">Users</button>
             <button class="btn btn-custom" id="voucherButton">Vouchers</button>
         </div>
-        <select id="languageSelector" class="form-select w-auto">
+        <select id="languageSelect" class="form-select form-select-sm" style="width: auto;">
             <option value="en">English</option>
             <option value="uk">Українська</option>
         </select>
@@ -292,7 +292,7 @@
         updateDropdown('hotelType', translations[language].options.hotelType);
         updateDropdown('status', translations[language].options.status);
     };
-    const languageSelect = document.getElementById('languageSelector');
+    const languageSelect = document.getElementById('languageSelect');
     const updateLanguage = (language) => {
         document.getElementById('formTitle').textContent = translations[language].formTitle;
         document.getElementById('titleLabel').textContent = translations[language].titleLabel;
@@ -314,11 +314,11 @@
 
     const setInitialLanguage = () => {
         const savedLanguage = localStorage.getItem('language') || 'en';
-        document.getElementById('languageSelector').value = savedLanguage;
+        document.getElementById('languageSelect').value = savedLanguage;
         updateLanguage(savedLanguage);
     };
 
-    document.getElementById('languageSelector').addEventListener('change', (e) => {
+    document.getElementById('languageSelect').addEventListener('change', (e) => {
         const selectedLanguage = e.target.value;
         localStorage.setItem('language', selectedLanguage);
         updateLanguage(selectedLanguage);
@@ -331,7 +331,7 @@
     }
 
     const voucherId = window.location.pathname.split('/').pop();
-    const language = document.getElementById('languageSelector').value;
+    const language = document.getElementById('languageSelect').value;
     fetch(`/vouchers/voucher/${voucherId}`, {
         method: 'GET',
         headers: {
@@ -354,12 +354,12 @@
             document.getElementById('isHot').checked = data.isHot === true;
         })
         .catch(error => {
-            alert(translations[languageSelector.value].alerts.loadError);
+            alert(translations[languageSelect.value].alerts.loadError);
         });
 
     document.getElementById('editVoucherForm').addEventListener('submit', function(event) {
         event.preventDefault();
-        const language = document.getElementById('languageSelector').value;
+        const language = document.getElementById('languageSelect').value;
         const arrivalDate = new Date(document.getElementById('arrivalDate').value);
         const evictionDate = new Date(document.getElementById('evictionDate').value);
         const today = new Date();

@@ -7,6 +7,10 @@ import com.epam.finaltask.mapper.VoucherMapper;
 import com.epam.finaltask.models.*;
 import com.epam.finaltask.repository.UserRepository;
 import com.epam.finaltask.repository.VoucherRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -194,15 +198,19 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public List<VoucherDTO> findAllByUserId(String userId) {
-        List<Voucher> vouchers = voucherRepository.findAllByUserId(UUID.fromString(userId));
-        return (vouchers != null && !vouchers.isEmpty()) ?
-                vouchers.stream()
-                        .sorted((v1, v2) -> Boolean.compare(v2.isHot(), v1.isHot()))
-                        .map(voucherMapper::toVoucherDTO)
-                        .collect(Collectors.toList()) :
-                Collections.emptyList();
+    public Page<VoucherDTO> findAllByUserId(String userId, Pageable pageable) {
+        List<Voucher> allVouchers = voucherRepository.findAllByUserId(UUID.fromString(userId)).stream()
+                .sorted((v1, v2) -> Boolean.compare(v2.isHot(), v1.isHot()))
+                .collect(Collectors.toList());
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), allVouchers.size());
+        List<VoucherDTO> paginatedVouchers = allVouchers.subList(start, end).stream()
+                .map(voucherMapper::toVoucherDTO)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(paginatedVouchers, pageable, allVouchers.size());
     }
+
 
     @Override
     public List<VoucherDTO> findAllByTourType(String tourType) {
@@ -212,16 +220,23 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public List<VoucherDTO> filterVouchers(String tourType, String transferType, String hotelType, Double minPrice, Double maxPrice) {
-        return voucherRepository.findAll().stream()
+    public Page<VoucherDTO> filterVouchers(String tourType, String transferType, String hotelType, Double minPrice, Double maxPrice, Pageable pageable) {
+        List<Voucher> filteredVouchers = voucherRepository.findAll().stream()
                 .filter(v -> tourType == null || v.getTourType().name().equalsIgnoreCase(tourType))
                 .filter(v -> transferType == null || v.getTransferType().name().equalsIgnoreCase(transferType))
                 .filter(v -> hotelType == null || v.getHotelType().name().equalsIgnoreCase(hotelType))
                 .filter(v -> minPrice == null || v.getPrice() >= minPrice)
                 .filter(v -> maxPrice == null || v.getPrice() <= maxPrice)
                 .sorted((v1, v2) -> Boolean.compare(v2.isHot(), v1.isHot()))
+                .collect(Collectors.toList());
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filteredVouchers.size());
+        List<VoucherDTO> paginatedVouchers = filteredVouchers.subList(start, end).stream()
                 .map(voucherMapper::toVoucherDTO)
                 .collect(Collectors.toList());
+
+        return new PageImpl<>(paginatedVouchers, pageable, filteredVouchers.size());
     }
 
     @Override
@@ -259,11 +274,18 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public List<VoucherDTO> findAll() {
-        return voucherRepository.findAll().stream()
+    public Page<VoucherDTO> findAll(Pageable pageable) {
+        List<Voucher> allVouchers = voucherRepository.findAll().stream()
                 .sorted((v1, v2) -> Boolean.compare(v2.isHot(), v1.isHot()))
+                .collect(Collectors.toList());
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), allVouchers.size());
+        List<VoucherDTO> paginatedVouchers = allVouchers.subList(start, end).stream()
                 .map(voucherMapper::toVoucherDTO)
                 .collect(Collectors.toList());
+
+        return new PageImpl<>(paginatedVouchers, pageable, allVouchers.size());
     }
+
 }
 

@@ -87,13 +87,13 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container-fluid">
+    <div class="container-fluid d-flex">
         <button class="btn btn-custom" id="vouchersButton">Vouchers</button>
-        <button class="btn btn-custom" id="logoutButton">Logout</button>
-        <select id="languageSelect" class="form-select form-select-sm ms-auto" style="width: auto;">
+        <select id="languageSelect" class="form-select form-select-sm" style="width: auto;">
             <option value="en">English</option>
             <option value="uk">Українська</option>
         </select>
+        <button class="btn ms-auto btn-custom" id="logoutButton">Logout</button>
     </div>
 </nav>
 
@@ -133,6 +133,7 @@
             <tbody id="vouchersList">
             </tbody>
         </table>
+        <div id="paginationContainer" class="pagination d-flex justify-content-center mt-4"></div>
     </div>
 </div>
 
@@ -305,46 +306,81 @@
                         });
                 });
 
-                fetch(`/vouchers/${user.id}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                        'Accept-Language': languageSelect.value
-                    }
-                })
-                    .then(response => response.json())
-                    .then(voucherData => {
-                        const vouchersList = document.getElementById('vouchersList');
-                        if (voucherData.results.length > 0) {
-                            voucherData.results.forEach(voucher => {
-                                const voucherRow = document.createElement('tr');
-                                voucherRow.innerHTML = `
-                                    <td>${voucher.title}</td>
-                                    <td>${voucher.description}</td>
-                                    <td>$${voucher.price.toFixed(2)}</td>
-                                    <td>${voucher.tourType}</td>
-                                    <td>${voucher.transferType}</td>
-                                    <td>${voucher.hotelType}</td>
-                                    <td>${voucher.status}</td>
-                                    <td>${voucher.arrivalDate}</td>
-                                    <td>${voucher.evictionDate}</td>
-                                    <td>${voucher.isHot === 'true' ? 'Yes' : 'No'}</td>
-                                    <td>
-                                     ${voucher.status === 'PAID' ? `<button class="btn cancel-voucher-btn" data-voucher-id="${voucher.id}">${translations[language].cancelVoucher}</button>` : ''}
-                                    </td>
+                let currentPage = 0;
+                let totalPages = 0;
 
-                                `;
-                                vouchersList.appendChild(voucherRow);
-                            });
-                        } else {
-                            vouchersList.innerHTML = '<tr><td colspan="11" class="text-center">' + translations[language].vouchersError + '</td></tr>';
+                const renderPagination = () => {
+                    const paginationContainer = document.getElementById('paginationContainer');
+                    paginationContainer.innerHTML = '';
+
+                    for (let i = 0; i < totalPages; i++) {
+                        const pageButton = document.createElement('button');
+                        pageButton.classList.add('btn', 'btn-custom', 'mx-1');
+                        if (i === currentPage) {
+                            pageButton.classList.add('active');
+                        }
+                        pageButton.textContent = i + 1;
+
+                        pageButton.addEventListener('click', () => {
+                            fetchVouchers(i);
+                        });
+
+                        paginationContainer.appendChild(pageButton);
+                    }
+                };
+
+                const renderVoucher = (voucher) => {
+                    const voucherRow = document.createElement('tr');
+                    voucherRow.innerHTML = `
+                    <td>${voucher.title}</td>
+                    <td>${voucher.description}</td>
+                    <td>$${voucher.price.toFixed(2)}</td>
+                    <td>${voucher.tourType}</td>
+                    <td>${voucher.transferType}</td>
+                    <td>${voucher.hotelType}</td>
+                    <td>${voucher.status}</td>
+                    <td>${voucher.arrivalDate}</td>
+                    <td>${voucher.evictionDate}</td>
+                    <td>${voucher.isHot === 'true' ? 'Yes' : 'No'}</td>
+                    <td>
+                        ${voucher.status === 'PAID' ? `<button class="btn cancel-voucher-btn" data-voucher-id="${voucher.id}">${translations[language].cancelVoucher}</button>` : ''}
+                    </td>
+                `;
+                    return voucherRow;
+                };
+
+                const fetchVouchers = (page = 0) => {
+                    const vouchersList = document.getElementById('vouchersList');
+                    vouchersList.innerHTML = '';
+                    fetch(`/vouchers/${user.id}?page=${page}&size=2`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                            'Accept-Language': languageSelect.value
                         }
                     })
-                    .catch(error => {
-                        console.error('Error fetching vouchers:', error);
-                        alert(translations[language].vouchersError);
-                    });
+                        .then(response => response.json())
+                        .then(voucherData => {
+                            if (voucherData.results.length > 0) {
+                                voucherData.results.forEach(voucher => {
+                                    vouchersList.appendChild(renderVoucher(voucher));
+                                });
+                                currentPage = voucherData.currentPage;
+                                totalPages = voucherData.totalPages;
+                                renderPagination();
+                            } else {
+                                vouchersList.innerHTML = '<tr><td colspan="11" class="text-center">' + translations[language].vouchersError + '</td></tr>';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching vouchers:', error);
+                            alert(translations[language].vouchersError);
+                        });
+                };
+
+                fetchVouchers();
+
             } else {
                 alert(translations[languageSelect.value].userDataError);
                 localStorage.clear();
@@ -368,7 +404,8 @@
                     method: 'PATCH',
                     headers: {
                         'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept-Language': languageSelect.value
                     },
                     body: JSON.stringify({ userId })
                 })
@@ -398,6 +435,7 @@
     document.getElementById('vouchersButton').addEventListener('click', () => {
         window.location.href = '/view/allVouchersUser';
     });
+
 </script>
 
 </body>

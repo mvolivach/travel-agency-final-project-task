@@ -1,6 +1,8 @@
 package com.epam.finaltask.service;
 
 import com.epam.finaltask.dto.VoucherDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,7 +12,7 @@ public interface VoucherService {
     VoucherDTO orderVoucher(String id, UUID userId);
     VoucherDTO update(String id, VoucherDTO voucherDTO);
     void delete(String voucherId);
-    List<VoucherDTO> findAllByUserId(String userId);
+    Page<VoucherDTO> findAllByUserId(String userId, Pageable pageable);
     VoucherDTO changeTourStatus(String id, String status);
     VoucherDTO changeHotStatus(String id, boolean hotStatus);
     void cancelVoucher(String voucherId, UUID userId);
@@ -20,6 +22,6 @@ public interface VoucherService {
     List<VoucherDTO> findAllByTransferType(String transferType);
     List<VoucherDTO> findAllByPrice(String price);
     List<VoucherDTO> findAllByHotelType(String hotelType);
-    List<VoucherDTO> filterVouchers(String tourType, String transferType,  String hotelType, Double minPrice, Double maxPrice);
-    List<VoucherDTO> findAll();
+    Page<VoucherDTO> filterVouchers(String tourType, String transferType,  String hotelType, Double minPrice, Double maxPrice,Pageable pageable);
+    Page<VoucherDTO> findAll(Pageable pageable);
 }
