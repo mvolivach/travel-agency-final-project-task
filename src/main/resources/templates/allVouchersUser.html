@@ -77,8 +77,12 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-light">
     <div class="container-fluid">
-        <button class="btn btn-custom" id="accountButton">My account</button>
-        <button class="btn btn-custom" id="logoutButton">Logout</button>
+        <button class="btn btn-custom" id="accountButton"></button>
+        <button class="btn btn-custom" id="logoutButton"></button>
+        <select id="languageSelect" class="form-select form-select-sm ms-auto" style="width: auto;">
+            <option value="en">English</option>
+            <option value="uk">Українська</option>
+        </select>
     </div>
 </nav>
 <div class="filter-form mb-4">
@@ -131,31 +135,187 @@
     </form>
 </div>
 <div class="container">
-    <h3 class="text-center mb-4">All Vouchers</h3>
+    <h3 class="text-center mb-4" id="allVouchersTitle"></h3>
     <table class="table table-striped voucher-table">
         <thead>
-        <tr>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Tour Type</th>
-            <th>Transfer Type</th>
-            <th>Hotel Type</th>
-            <th>Status</th>
-            <th>Arrival Date</th>
-            <th>Eviction Date</th>
-            <th>Hot</th>
-            <th>Action</th>
-        </tr>
+        <th id="titleHeader"></th>
+        <th id="descriptionHeader"></th>
+        <th id="priceHeader"></th>
+        <th id="tourTypeHeader"></th>
+        <th id="transferTypeHeader"></th>
+        <th id="hotelTypeHeader"></th>
+        <th id="statusHeader"></th>
+        <th id="arrivalDateHeader"></th>
+        <th id="evictionDateHeader"></th>
+        <th id="hotHeader"></th>
+        <th id="actionHeader"></th>
         </thead>
-        <tbody id="vouchersList">
-        </tbody>
+        <tbody id="vouchersList"></tbody>
     </table>
 </div>
 
 <script>
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
+
+    const translations = {
+        en: {
+            account: "My account",
+            logout: "Logout",
+            title: "Title",
+            description: "Description",
+            price: "Price",
+            tourType: "Tour Type",
+            transferType: "Transfer Type",
+            hotelType: "Hotel Type",
+            status: "Status",
+            arrivalDate: "Arrival Date",
+            evictionDate: "Eviction Date",
+            hot: "Hot",
+            action: "Action",
+            allVouchers: "All Vouchers",
+            noVouchersFound: "No vouchers found.",
+            orderFailed: "Order failed.",
+            voucherOrdered: "Voucher successfully ordered!",
+            filter: {
+                tourType: "Tour Type",
+                transferType: "Transfer Type",
+                hotelType: "Hotel Type",
+                minPrice: "Min Price",
+                maxPrice: "Max Price",
+                applyFilters: "Apply Filters",
+                tourTypes: {
+                    HEALTH: "Health",
+                    SPORTS: "Sports",
+                    LEISURE: "Leisure",
+                    SAFARI: "Safari",
+                    WINE: "Wine",
+                    ECO: "Eco",
+                    ADVENTURE: "Adventure",
+                    CULTURAL: "Cultural"
+                },
+                transferTypes: {
+                    BUS: "Bus",
+                    TRAIN: "Train",
+                    PLANE: "Plane",
+                    SHIP: "Ship",
+                    PRIVATE_CAR: "Private Car",
+                    JEEPS: "Jeeps",
+                    MINIBUS: "Minibus",
+                    ELECTRICAL_CARS: "Electrical Cars"
+                },
+                hotelTypes: {
+                    ONE_STAR: "1 Star",
+                    TWO_STARS: "2 Stars",
+                    THREE_STARS: "3 Stars",
+                    FOUR_STARS: "4 Stars",
+                    FIVE_STARS: "5 Stars"
+                }
+            }
+        },
+        uk: {
+            account: "Мій акаунт",
+            logout: "Вийти",
+            title: "Назва",
+            description: "Опис",
+            price: "Ціна",
+            tourType: "Тип туру",
+            transferType: "Тип трансферу",
+            hotelType: "Тип готелю",
+            status: "Статус",
+            arrivalDate: "Дата приїзду",
+            evictionDate: "Дата виселення",
+            hot: "Гарячий",
+            action: "Дія",
+            allVouchers: "Усі ваучери",
+            noVouchersFound: "Ваучерів не знайдено.",
+            orderFailed: "Не вдалося оформити замовлення.",
+            voucherOrdered: "Ваучер успішно замовлений!",
+            filter: {
+                tourType: "Тип туру",
+                transferType: "Тип трансферу",
+                hotelType: "Тип готелю",
+                minPrice: "Мін. ціна",
+                maxPrice: "Макс. ціна",
+                applyFilters: "Застосувати фільтри",
+                tourTypes: {
+                    HEALTH: "Оздоровчий",
+                    SPORTS: "Спортивний",
+                    LEISURE: "Відпочинок",
+                    SAFARI: "Сафарі",
+                    WINE: "Винний",
+                    ECO: "Еко",
+                    ADVENTURE: "Пригодницький",
+                    CULTURAL: "Культурний"
+                },
+                transferTypes: {
+                    BUS: "Автобус",
+                    TRAIN: "Поїзд",
+                    PLANE: "Літак",
+                    SHIP: "Корабель",
+                    PRIVATE_CAR: "Приватний автомобіль",
+                    JEEPS: "Джипи",
+                    MINIBUS: "Мікроавтобус",
+                    ELECTRICAL_CARS: "Електромобілі"
+                },
+                hotelTypes: {
+                    ONE_STAR: "1 зірка",
+                    TWO_STARS: "2 зірки",
+                    THREE_STARS: "3 зірки",
+                    FOUR_STARS: "4 зірки",
+                    FIVE_STARS: "5 зірок"
+                }
+            }
+        }
+    };
+    const updateFiltersLocalization = (language) => {
+        document.getElementById('tourTypeFilter').innerHTML = `
+        <option value="">${translations[language].filter.tourType}</option>
+        ${Object.entries(translations[language].filter.tourTypes).map(([key, value]) => `<option value="${key}">${value}</option>`).join('')}
+    `;
+        document.getElementById('transferTypeFilter').innerHTML = `
+        <option value="">${translations[language].filter.transferType}</option>
+        ${Object.entries(translations[language].filter.transferTypes).map(([key, value]) => `<option value="${key}">${value}</option>`).join('')}
+    `;
+        document.getElementById('hotelTypeFilter').innerHTML = `
+        <option value="">${translations[language].filter.hotelType}</option>
+        ${Object.entries(translations[language].filter.hotelTypes).map(([key, value]) => `<option value="${key}">${value}</option>`).join('')}
+    `;
+        document.getElementById('minPriceFilter').placeholder = translations[language].filter.minPrice;
+        document.getElementById('maxPriceFilter').placeholder = translations[language].filter.maxPrice;
+        document.querySelector('#filterForm button[type="submit"]').textContent = translations[language].filter.applyFilters;
+    };
+    const languageSelect = document.getElementById('languageSelect');
+    const updateLanguage = (language) => {
+        document.getElementById('accountButton').textContent = translations[language].account;
+        document.getElementById('logoutButton').textContent = translations[language].logout;
+        document.getElementById('titleHeader').textContent = translations[language].title;
+        document.getElementById('descriptionHeader').textContent = translations[language].description;
+        document.getElementById('priceHeader').textContent = translations[language].price;
+        document.getElementById('tourTypeHeader').textContent = translations[language].tourType;
+        document.getElementById('transferTypeHeader').textContent = translations[language].transferType;
+        document.getElementById('hotelTypeHeader').textContent = translations[language].hotelType;
+        document.getElementById('statusHeader').textContent = translations[language].status;
+        document.getElementById('arrivalDateHeader').textContent = translations[language].arrivalDate;
+        document.getElementById('evictionDateHeader').textContent = translations[language].evictionDate;
+        document.getElementById('hotHeader').textContent = translations[language].hot;
+        document.getElementById('actionHeader').textContent = translations[language].action;
+        document.getElementById('allVouchersTitle').textContent = translations[language].allVouchers;
+        updateFiltersLocalization(language);
+    };
+
+    const setInitialLanguage = () => {
+        const savedLanguage = localStorage.getItem('language') || 'en';
+        document.getElementById('languageSelect').value = savedLanguage;
+        updateLanguage(savedLanguage);
+    };
+
+    document.getElementById('languageSelect').addEventListener('change', (e) => {
+        const selectedLanguage = e.target.value;
+        localStorage.setItem('language', selectedLanguage);
+        updateLanguage(selectedLanguage);
+    });
+    setInitialLanguage();
 
     if (!token) {
         window.location.href = '/view/login';
@@ -200,11 +360,11 @@
                         })
                             .then(response => {
                                 if (response.ok) {
-                                    alert('Voucher successfully ordered!');
+                                    alert(translations[language].voucherOrdered);
                                     location.reload();
                                 } else {
                                     response.json().then(data => {
-                                        alert(data.statusMessage || 'Order failed.');
+                                        alert(data.statusMessage || translations[language].orderFailed);
                                     });
                                 }
                             })
@@ -212,7 +372,7 @@
                     });
                 });
             } else {
-                vouchersList.innerHTML = '<tr><td colspan="11" class="text-center">No vouchers found.</td></tr>';
+                vouchersList.innerHTML = `<tr><td colspan="11" class="text-center">${translations[language].noVouchersFound}</td></tr>`;
             }
         })
         .catch(error => {
@@ -258,29 +418,27 @@
             .then(voucherData => {
                 const vouchersList = document.getElementById('vouchersList');
                 vouchersList.innerHTML = '';
+
                 if (voucherData.results.length > 0) {
                     voucherData.results.forEach(voucher => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                        <td>${voucher.title}</td>
-                        <td>${voucher.description}</td>
-                        <td>$${voucher.price.toFixed(2)}</td>
-                        <td>${voucher.tourType}</td>
-                        <td>${voucher.transferType}</td>
-                        <td>${voucher.hotelType}</td>
-                        <td>${voucher.status}</td>
-                        <td>${voucher.arrivalDate}</td>
-                        <td>${voucher.evictionDate}</td>
-                        <td>${voucher.isHot}</td>
-                        <td><button class="btn order-btn" data-voucher-id="${voucher.id}" data-user-id="${userId}">Order</button></td>
-                    `;
-                        vouchersList.appendChild(row);
-                    });
-                    const orderButtons = document.querySelectorAll('.order-btn');
-                    orderButtons.forEach(button => {
-                        button.addEventListener('click', () => {
-                            const voucherId = button.getAttribute('data-voucher-id');
-                            fetch(`/vouchers/order/${voucherId}`, {
+                        const voucherRow = document.createElement('tr');
+                        voucherRow.innerHTML = `
+                            <td>${voucher.title}</td>
+                            <td>${voucher.description}</td>
+                            <td>$${voucher.price.toFixed(2)}</td>
+                            <td>${voucher.tourType}</td>
+                            <td>${voucher.transferType}</td>
+                            <td>${voucher.hotelType}</td>
+                            <td>${voucher.status}</td>
+                            <td>${voucher.arrivalDate}</td>
+                            <td>${voucher.evictionDate}</td>
+                            <td>${voucher.isHot === 'true' ? 'Yes' : 'No'}</td>
+                            <td><button class="btn order-btn" data-voucher-id="${voucher.id}" data-user-id="${userId}">Order</button></td>
+                        `;
+                        vouchersList.appendChild(voucherRow);
+
+                        voucherRow.querySelector('.order-btn').addEventListener('click', () => {
+                            fetch(`/vouchers/order/${voucher.id}`, {
                                 method: 'POST',
                                 headers: {
                                     'Authorization': `Bearer ${token}`,
@@ -290,11 +448,11 @@
                             })
                                 .then(response => {
                                     if (response.ok) {
-                                        alert('Voucher successfully ordered!');
+                                        alert(translations[language].voucherOrdered);
                                         location.reload();
                                     } else {
                                         response.json().then(data => {
-                                            alert(data.statusMessage || 'Order failed.');
+                                            alert(data.statusMessage || translations[language].orderFailed);
                                         });
                                     }
                                 })
@@ -302,15 +460,14 @@
                         });
                     });
                 } else {
-                    vouchersList.innerHTML = '<tr><td colspan="11" class="text-center">No vouchers found.</td></tr>';
+                    vouchersList.innerHTML = `<tr><td colspan="11" class="text-center">${translations[language].noVouchersFound}</td></tr>`;
                 }
             })
             .catch(error => {
-                console.error('Error fetching vouchers:', error);
+                console.error('Error fetching filtered vouchers:', error);
+                alert('Failed to load filtered vouchers.');
             });
     });
-
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

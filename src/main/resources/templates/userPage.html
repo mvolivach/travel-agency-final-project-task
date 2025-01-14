@@ -65,7 +65,7 @@
             font-size: 12px;
             padding: 0.5rem;
         }
-        /* Style for the 'Add' button, to match 'Cancel Voucher' button */
+
         .add-balance-btn {
             background-color: #e6e6e6;
             border-radius: 20px;
@@ -90,40 +90,44 @@
     <div class="container-fluid">
         <button class="btn btn-custom" id="vouchersButton">Vouchers</button>
         <button class="btn btn-custom" id="logoutButton">Logout</button>
+        <select id="languageSelect" class="form-select form-select-sm ms-auto" style="width: auto;">
+            <option value="en">English</option>
+            <option value="uk">Українська</option>
+        </select>
     </div>
 </nav>
 
 <div class="container d-flex flex-column align-items-center vh-100 py-5">
     <div class="card p-4 mb-4" style="width: 100%;">
-        <h3 class="text-center mb-4">User Profile</h3>
+        <h3 class="text-center mb-4" id="userProfileHeader">User Profile</h3>
         <ul class="list-group list-group-flush">
-            <li class="list-group-item">Username: <span id="username"></span></li>
-            <li class="list-group-item">Role: <span id="role"></span></li>
-            <li class="list-group-item">Account Status: <span id="status"></span></li>
-            <li class="list-group-item">Balance: $<span id="balance"></span>
+            <li class="list-group-item" id="usernameField">Username: <span id="username"></span></li>
+            <li class="list-group-item" id="roleField">Role: <span id="role"></span></li>
+            <li class="list-group-item" id="statusField">Account Status: <span id="status"></span></li>
+            <li class="list-group-item" id="balanceField">Balance: $<span id="balance"></span>
                 <input type="number" id="balanceAmount" class="form-control form-control-sm" placeholder="Enter amount to add" step="0.01" style="display:inline-block; width:auto; margin-left:10px;">
                 <button class="btn add-balance-btn" id="updateBalanceButton" style="display:inline-block;">Add</button>
             </li>
-            <li class="list-group-item">Phone Number: <span id="phoneNumber"></span></li>
+            <li class="list-group-item" id="phoneField">Phone Number: <span id="phoneNumber"></span></li>
         </ul>
     </div>
 
     <div class="card p-4" style="width: 100%;">
-        <h4 class="text-center mb-4">Your Vouchers</h4>
+        <h4 class="text-center mb-4" id="yourVouchersHeader">Your Vouchers</h4>
         <table class="voucher-table">
             <thead>
             <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Price</th>
-                <th>Tour Type</th>
-                <th>Transfer Type</th>
-                <th>Hotel Type</th>
-                <th>Status</th>
-                <th>Arrival Date</th>
-                <th>Eviction Date</th>
-                <th>Hot</th>
-                <th>Action</th>
+                <th id="titleHeader">Title</th>
+                <th id="descriptionHeader">Description</th>
+                <th id="priceHeader">Price</th>
+                <th id="tourTypeHeader">Tour Type</th>
+                <th id="transferTypeHeader">Transfer Type</th>
+                <th id="hotelTypeHeader">Hotel Type</th>
+                <th id="statusHeader">Status</th>
+                <th id="arrivalDateHeader">Arrival Date</th>
+                <th id="evictionDateHeader">Eviction Date</th>
+                <th id="hotHeader">Hot</th>
+                <th id="actionHeader">Action</th>
             </tr>
             </thead>
             <tbody id="vouchersList">
@@ -132,11 +136,117 @@
     </div>
 </div>
 
-
 <script>
     const token = localStorage.getItem('token');
     const username = localStorage.getItem('username');
 
+    const translations = {
+        en: {
+            vouchers: "Vouchers",
+            logout: "Logout",
+            userProfile: "User Profile",
+            yourVouchers: "Your Vouchers",
+            title: "Title",
+            description: "Description",
+            price: "Price",
+            tourType: "Tour Type",
+            transferType: "Transfer Type",
+            hotelType: "Hotel Type",
+            status: "Status",
+            arrivalDate: "Arrival Date",
+            evictionDate: "Eviction Date",
+            hot: "Hot",
+            action: "Action",
+            username: "Username",
+            role: "Role",
+            accountStatus: "Account Status",
+            balance: "Balance",
+            add: "Add",
+            phoneNumber: "Phone Number",
+            enterAmount: "Enter amount to add",
+            invalidAmount: "Please enter a valid amount.",
+            balanceUpdated: "Balance updated successfully!",
+            balanceUpdateFailed: "Failed to update balance: ",
+            vouchersError: "Failed to load vouchers.",
+            userDataError: "Failed to load user data. Redirecting to login.",
+            generalError: "An error occurred. Please try again.",
+            cancelVoucherConfirm: "Are you sure you want to cancel this voucher?",
+            cancelVoucherSuccess: "Voucher canceled successfully!",
+            cancelVoucherError: "An error occurred while canceling the voucher."
+        },
+        uk: {
+            vouchers: "Ваучери",
+            logout: "Вийти",
+            userProfile: "Профіль користувача",
+            yourVouchers: "Ваші Ваучери",
+            title: "Назва",
+            description: "Опис",
+            price: "Ціна",
+            tourType: "Тип туру",
+            transferType: "Тип трансферу",
+            hotelType: "Тип готелю",
+            status: "Статус",
+            arrivalDate: "Дата приїзду",
+            evictionDate: "Дата виселення",
+            hot: "Гарячий",
+            action: "Дія",
+            username: "Ім'я користувача",
+            role: "Роль",
+            accountStatus: "Статус акаунта",
+            balance: "Баланс",
+            add: "Додати",
+            phoneNumber: "Номер телефону",
+            enterAmount: "Введіть суму для додавання",
+            invalidAmount: "Будь ласка, введіть правильну суму.",
+            balanceUpdated: "Баланс успішно оновлений!",
+            balanceUpdateFailed: "Не вдалося оновити баланс: ",
+            vouchersError: "Не вдалося завантажити ваучери.",
+            userDataError: "Не вдалося завантажити дані користувача. Перенаправлення на сторінку входу.",
+            generalError: "Сталася помилка. Будь ласка, спробуйте ще раз.",
+            cancelVoucherConfirm: "Ви дійсно хочете скасувати цей ваучер?",
+            cancelVoucherSuccess: "Ваучер успішно скасовано!",
+            cancelVoucherError: "Сталася помилка під час скасування ваучера."
+        }
+    };
+
+    const languageSelect = document.getElementById('languageSelect');
+    const updateLanguage = (language) => {
+        document.getElementById('vouchersButton').textContent = translations[language].vouchers;
+        document.getElementById('logoutButton').textContent = translations[language].logout;
+        document.getElementById('userProfileHeader').textContent = translations[language].userProfile;
+        document.getElementById('yourVouchersHeader').textContent = translations[language].yourVouchers;
+        document.getElementById('titleHeader').textContent = translations[language].title;
+        document.getElementById('descriptionHeader').textContent = translations[language].description;
+        document.getElementById('priceHeader').textContent = translations[language].price;
+        document.getElementById('tourTypeHeader').textContent = translations[language].tourType;
+        document.getElementById('transferTypeHeader').textContent = translations[language].transferType;
+        document.getElementById('hotelTypeHeader').textContent = translations[language].hotelType;
+        document.getElementById('statusHeader').textContent = translations[language].status;
+        document.getElementById('arrivalDateHeader').textContent = translations[language].arrivalDate;
+        document.getElementById('evictionDateHeader').textContent = translations[language].evictionDate;
+        document.getElementById('hotHeader').textContent = translations[language].hot;
+        document.getElementById('actionHeader').textContent = translations[language].action;
+        document.getElementById("usernameField").childNodes[0].textContent = translations[language].username + ": ";
+        document.getElementById("roleField").childNodes[0].textContent = translations[language].role + ": ";
+        document.getElementById("statusField").childNodes[0].textContent = translations[language].accountStatus + ": ";
+        document.getElementById("balanceField").childNodes[0].textContent = translations[language].balance + ": $";
+        document.getElementById("updateBalanceButton").textContent = translations[language].add;
+        document.getElementById("balanceAmount").placeholder = translations[language].enterAmount;
+        document.getElementById("phoneField").childNodes[0].textContent = translations[language].phoneNumber + ": ";
+    };
+
+    const setInitialLanguage = () => {
+        const savedLanguage = localStorage.getItem('language') || 'en';
+        document.getElementById('languageSelect').value = savedLanguage;
+        updateLanguage(savedLanguage);
+    };
+
+    document.getElementById('languageSelect').addEventListener('change', (e) => {
+        const selectedLanguage = e.target.value;
+        localStorage.setItem('language', selectedLanguage);
+        updateLanguage(selectedLanguage);
+    });
+    setInitialLanguage();
     if (!token || !username) {
         window.location.href = '/view/login';
     }
@@ -161,7 +271,7 @@
                 document.getElementById('updateBalanceButton').addEventListener('click', () => {
                     const amount = parseFloat(document.getElementById('balanceAmount').value);
                     if (isNaN(amount) || amount <= 0) {
-                        alert('Please enter a valid amount.');
+                        alert(translations[languageSelect.value].invalidAmount);
                         return;
                     }
 
@@ -176,14 +286,14 @@
                         .then(updateData => {
                             if (updateData.statusCode === 'OK') {
                                 document.getElementById('balance').textContent = updateData.data.balance.toFixed(2);
-                                alert('Balance updated successfully!');
+                                alert(translations[languageSelect.value].balanceUpdated);
                             } else {
-                                alert(`Failed to update balance: ${updateData.statusMessage}`);
+                                alert(translations[languageSelect.value].balanceUpdateFailed + updateData.statusMessage);
                             }
                         })
                         .catch(error => {
                             console.error('Error updating balance:', error);
-                            alert('An error occurred while updating the balance.');
+                            alert(translations[languageSelect.value].generalError);
                         });
                 });
 
@@ -218,22 +328,22 @@
                                 vouchersList.appendChild(voucherRow);
                             });
                         } else {
-                            vouchersList.innerHTML = '<tr><td colspan="11" class="text-center">No vouchers found.</td></tr>';
+                            vouchersList.innerHTML = '<tr><td colspan="11" class="text-center">' + translations[languageSelect.value].vouchersError + '</td></tr>';
                         }
                     })
                     .catch(error => {
                         console.error('Error fetching vouchers:', error);
-                        alert('Failed to load vouchers.');
+                        alert(translations[languageSelect.value].vouchersError);
                     });
             } else {
-                alert('Failed to load user data. Redirecting to login.');
+                alert(translations[languageSelect.value].userDataError);
                 localStorage.clear();
                 window.location.href = '/view/login';
             }
         })
         .catch(error => {
             console.error('Error fetching user data:', error);
-            alert('An error occurred. Please try again.');
+            alert(translations[languageSelect.value].generalError);
             localStorage.clear();
             window.location.href = '/view/login';
         });
@@ -243,7 +353,7 @@
             const voucherId = event.target.getAttribute('data-voucher-id');
             const userId = localStorage.getItem('userId');
 
-            if (confirm('Are you sure you want to cancel this voucher?')) {
+            if (confirm(translations[languageSelect.value].cancelVoucherConfirm)) {
                 fetch(`/vouchers/cancel/${voucherId}`, {
                     method: 'PATCH',
                     headers: {
@@ -255,15 +365,15 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.statusCode === 'OK') {
-                            alert('Voucher canceled successfully!');
+                            alert(translations[languageSelect.value].cancelVoucherSuccess);
                             location.reload();
                         } else {
-                            alert(`Failed to cancel voucher: ${data.statusMessage}`);
+                            alert(translations[languageSelect.value].cancelVoucherError + data.statusMessage);
                         }
                     })
                     .catch(error => {
                         console.error('Error canceling voucher:', error);
-                        alert('An error occurred while canceling the voucher.');
+                        alert(translations[languageSelect.value].cancelVoucherError);
                     });
             }
         }
@@ -279,5 +389,6 @@
         window.location.href = '/view/allVouchersUser';
     });
 </script>
+
 </body>
 </html>

@@ -71,9 +71,6 @@
             width: auto;
         }
 
-        .pagination {
-            justify-content: center;
-        }
     </style>
 </head>
 <body>
@@ -83,6 +80,10 @@
             <button class="btn btn-custom" id="usersButton">Users</button>
             <button class="btn btn-custom" id="voucherButton">Create new voucher</button>
         </div>
+        <select id="languageSelect" class="form-select form-select-sm ms-auto" style="width: auto;">
+            <option value="en">English</option>
+            <option value="uk">Українська</option>
+        </select>
         <button class="btn ms-auto btn-custom" id="logoutButton">Logout</button>
     </div>
 </nav>
@@ -91,56 +92,134 @@
     <table class="table voucher-table">
         <thead>
         <tr>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Tour Type</th>
-            <th>Transfer Type</th>
-            <th>Hotel Type</th>
-            <th>Status</th>
-            <th>Arrival Date</th>
-            <th>Eviction Date</th>
-            <th>Hot</th>
-            <th>Actions</th>
+            <th id="titleHeader">Title</th>
+            <th id="descriptionHeader">Description</th>
+            <th id="priceHeader">Price</th>
+            <th id="tourTypeHeader">Tour Type</th>
+            <th id="transferTypeHeader">Transfer Type</th>
+            <th id="hotelTypeHeader">Hotel Type</th>
+            <th id="statusHeader">Status</th>
+            <th id="arrivalDateHeader">Arrival Date</th>
+            <th id="evictionDateHeader">Eviction Date</th>
+            <th id="hotHeader">Hot</th>
+            <th id="actionHeader">Action</th>
         </tr>
         </thead>
         <tbody id="vouchersList">
         </tbody>
     </table>
-    <nav>
-        <ul class="pagination" id="pagination">
-        </ul>
-    </nav>
 </div>
 
 <script>
     const token = localStorage.getItem('token');
-    const vouchersPerPage = 5;
-    let currentPage = 1;
+
+    const translations = {
+        en: {
+            users: "Users",
+            newVoucher: "Create new voucher",
+            logout: "Logout",
+            title: "Title",
+            description: "Description",
+            price: "Price",
+            tourType: "Tour Type",
+            transferType: "Transfer Type",
+            hotelType: "Hotel Type",
+            status: "Status",
+            arrivalDate: "Arrival Date",
+            evictionDate: "Eviction Date",
+            hot: "Hot",
+            action: "Action",
+            alertEditLock: "To unlock editing please change status to registered or canceled",
+            alertStatusUpdateSuccess: "Tour status updated to \"{status}\" successfully.",
+            alertStatusUpdateFail: "Failed to update tour status.",
+            alertHotStatusUpdateSuccess: "Hot status updated to \"{status}\" successfully.",
+            alertHotStatusUpdateFail: "Failed to update hot status.",
+            alertDeleteSuccess: "Voucher deleted successfully.",
+            alertDeleteFail: "Failed to delete voucher.",
+            alertFetchFail: "Failed to load vouchers."
+        },
+        uk: {
+            users: "Користувачі",
+            newVoucher: "Створити новий ваучер",
+            logout: "Вийти",
+            title: "Назва",
+            description: "Опис",
+            price: "Ціна",
+            tourType: "Тип туру",
+            transferType: "Тип трансферу",
+            hotelType: "Тип готелю",
+            status: "Статус",
+            arrivalDate: "Дата приїзду",
+            evictionDate: "Дата виселення",
+            hot: "Гарячий",
+            action: "Дія",
+            alertEditLock: "Щоб розблокувати редагування, змініть статус на зареєстрований або скасований",
+            alertStatusUpdateSuccess: "Статус туру оновлено до \"{status}\" успішно.",
+            alertStatusUpdateFail: "Не вдалося оновити статус туру.",
+            alertHotStatusUpdateSuccess: "Гарячий статус оновлено до \"{status}\" успішно.",
+            alertHotStatusUpdateFail: "Не вдалося оновити гарячий статус.",
+            alertDeleteSuccess: "Ваучер успішно видалено.",
+            alertDeleteFail: "Не вдалося видалити ваучер.",
+            alertFetchFail: "Не вдалося завантажити ваучери."
+        }
+    };
+
+    const getTranslation = (key, replacements = {}) => {
+        const language = localStorage.getItem('language') || 'en';
+        let translation = translations[language][key] || key;
+        Object.keys(replacements).forEach(k => {
+            translation = translation.replace(`{${k}}`, replacements[k]);
+        });
+        return translation;
+    };
+    const updateLanguage = (language) => {
+        document.getElementById('voucherButton').textContent = getTranslation('newVoucher');
+        document.getElementById('usersButton').textContent = getTranslation('users');
+        document.getElementById('logoutButton').textContent = getTranslation('logout');
+        document.getElementById('titleHeader').textContent = getTranslation('title');
+        document.getElementById('descriptionHeader').textContent = getTranslation('description');
+        document.getElementById('priceHeader').textContent = getTranslation('price');
+        document.getElementById('tourTypeHeader').textContent = getTranslation('tourType');
+        document.getElementById('transferTypeHeader').textContent = getTranslation('transferType');
+        document.getElementById('hotelTypeHeader').textContent = getTranslation('hotelType');
+        document.getElementById('statusHeader').textContent = getTranslation('status');
+        document.getElementById('arrivalDateHeader').textContent = getTranslation('arrivalDate');
+        document.getElementById('evictionDateHeader').textContent = getTranslation('evictionDate');
+        document.getElementById('hotHeader').textContent = getTranslation('hot');
+        document.getElementById('actionHeader').textContent = getTranslation('action');
+    };
+
+    const setInitialLanguage = () => {
+        const savedLanguage = localStorage.getItem('language') || 'en';
+        document.getElementById('languageSelect').value = savedLanguage;
+        updateLanguage(savedLanguage);
+    };
+
+    document.getElementById('languageSelect').addEventListener('change', (e) => {
+        const selectedLanguage = e.target.value;
+        localStorage.setItem('language', selectedLanguage);
+        updateLanguage(selectedLanguage);
+    });
+    setInitialLanguage();
 
     if (!token) {
         window.location.href = '/view/login';
     }
 
-    function loadVouchers(page) {
-        fetch(`/vouchers/allVouchers?page=${page}&size=${vouchersPerPage}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(response => response.json())
-            .then(voucherData => {
-                const vouchersList = document.getElementById('vouchersList');
-                const pagination = document.getElementById('pagination');
-                vouchersList.innerHTML = '';
-                pagination.innerHTML = '';
-
-                if (voucherData.results.length > 0) {
-                    voucherData.results.forEach(voucher => {
-                        const voucherRow = document.createElement('tr');
-                        voucherRow.innerHTML = `
+    fetch('/vouchers/allVouchers', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => response.json())
+        .then(voucherData => {
+            const vouchersList = document.getElementById('vouchersList');
+            if (voucherData.results.length > 0) {
+                voucherData.results.forEach(voucher => {
+                    const voucherRow = document.createElement('tr');
+                    voucherRow.innerHTML = `
                         <td>${voucher.title}</td>
                         <td>${voucher.description}</td>
                         <td>$${voucher.price.toFixed(2)}</td>
@@ -171,108 +250,91 @@
                             <button class="btn btn-sm deleteVoucher" data-id="${voucher.id}">Delete</button>
                         </td>
                     `;
-                        vouchersList.appendChild(voucherRow);
+                    vouchersList.appendChild(voucherRow);
+                });
+
+                document.querySelectorAll('.editVoucher').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const voucherId = event.target.getAttribute('data-id');
+                        const voucherRow = event.target.closest('tr');
+                        const status = voucherRow.querySelector('.status-select').value;
+
+                        if (status === 'PAID') {
+                            alert(getTranslation('alertEditLock'));
+                        } else {
+                            window.location.href = `/view/editVoucher/${voucherId}`;
+                        }
                     });
+                });
 
-                    const totalPages = Math.ceil(voucherData.totalCount / vouchersPerPage);
-                    for (let i = 1; i <= totalPages; i++) {
-                        const pageItem = document.createElement('li');
-                        pageItem.classList.add('page-item');
-                        pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-                        pageItem.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            currentPage = i;
-                            loadVouchers(currentPage);
-                        });
-                        pagination.appendChild(pageItem);
-                    }
+                document.querySelectorAll('.deleteVoucher').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const voucherId = event.target.getAttribute('data-id');
+                        deleteVoucher(voucherId);
+                    });
+                });
 
-                    document.querySelectorAll('.editVoucher').forEach(button => {
-                        button.addEventListener('click', (event) => {
-                            const voucherId = event.target.getAttribute('data-id');
-                            const voucherRow = event.target.closest('tr');
-                            const status = voucherRow.querySelector('.status-select').value;
+                document.querySelectorAll('.status-select').forEach(select => {
+                    const currentStatus = select.value;
+                    select.addEventListener('change', (e) => {
+                        const voucherId = e.target.getAttribute('data-id');
+                        const newStatus = e.target.value;
 
-                            if (status === 'PAID') {
-                                alert('To unlock editing please change status to registered or canceled');
-                            } else {
-                                window.location.href = `/view/editVoucher/${voucherId}`;
+                        fetch(`/vouchers/${voucherId}/status?status=${newStatus}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
                             }
-                        });
-                    });
-
-
-                    document.querySelectorAll('.deleteVoucher').forEach(button => {
-                        button.addEventListener('click', (event) => {
-                            const voucherId = event.target.getAttribute('data-id');
-                            deleteVoucher(voucherId);
-                        });
-                    });
-
-                    document.querySelectorAll('.status-select').forEach(select => {
-                        const currentStatus = select.value;
-                        select.addEventListener('change', (e) => {
-                            const voucherId = e.target.getAttribute('data-id');
-                            const newStatus = e.target.value;
-
-                            fetch(`/vouchers/${voucherId}/status?status=${newStatus}`, {
-                                method: 'PATCH',
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Content-Type': 'application/json'
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Failed to update status');
                                 }
+                                return response.json();
                             })
-                                .then(response => {
-                                    if (!response.ok) {
-                                        throw new Error('Failed to update status');
-                                    }
-                                    return response.json();
-                                })
-                                .then(data => {
-                                    alert(`Tour status updated to "${newStatus}" successfully.`);
-                                })
-                                .catch(error => {
-                                    console.error('Error updating tour status:', error);
-                                    alert('Failed to update tour status.');
-                                });
-                        });
-                    });
-
-                    document.querySelectorAll('.hot-status-select').forEach(select => {
-                        select.addEventListener('change', (e) => {
-                            const voucherId = e.target.getAttribute('data-id');
-                            const newHotStatus = e.target.value === 'true';
-
-                            fetch(`/vouchers/${voucherId}/hot-status?hotStatus=${newHotStatus}`, {
-                                method: 'PATCH',
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Content-Type': 'application/json'
-                                }
+                            .then(data => {
+                                alert(getTranslation('alertStatusUpdateSuccess', { status: newStatus }));
                             })
-                                .then(response => response.json())
-                                .then(data => {
-                                    const updatedSelect = e.target;
-                                    updatedSelect.value = newHotStatus.toString();
-                                    alert(`Hot status updated to "${newHotStatus ? 'Yes' : 'No'}" successfully.`);
-                                })
-                                .catch(error => {
-                                    console.error('Error updating hot status:', error);
-                                    alert('Failed to update hot status.');
-                                });
-                        });
+                            .catch(error => {
+                                console.error('Error updating tour status:', error);
+                                alert(getTranslation('alertStatusUpdateFail'));
+                            });
                     });
-                } else {
-                    vouchersList.innerHTML = '<p class="text-center">No vouchers found.</p>';
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching vouchers:', error);
-                alert('Failed to load vouchers.');
-            });
-    }
+                });
 
-    loadVouchers(currentPage);
+                document.querySelectorAll('.hot-status-select').forEach(select => {
+                    select.addEventListener('change', (e) => {
+                        const voucherId = e.target.getAttribute('data-id');
+                        const newHotStatus = e.target.value === 'true';
+
+                        fetch(`/vouchers/${voucherId}/hot-status?hotStatus=${newHotStatus}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                const updatedSelect = e.target;
+                                updatedSelect.value = newHotStatus.toString();
+                                alert(getTranslation('alertHotStatusUpdateSuccess', { status: newHotStatus ? 'Yes' : 'No' }));
+                            })
+                            .catch(error => {
+                                console.error('Error updating hot status:', error);
+                                alert(getTranslation('alertHotStatusUpdateFail'));
+                            });
+                    });
+                });
+            } else {
+                vouchersList.innerHTML = `<p class="text-center">${getTranslation('alertFetchFail')}</p>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching vouchers:', error);
+            alert(getTranslation('alertFetchFail'));
+        });
 
     function deleteVoucher(voucherId) {
         fetch(`/vouchers/${voucherId}`, {
@@ -284,12 +346,12 @@
         })
             .then(response => response.json())
             .then(data => {
-                alert('Voucher deleted successfully');
+                alert(getTranslation('alertDeleteSuccess'));
                 loadVouchers(currentPage);
             })
             .catch(error => {
                 console.error('Error deleting voucher:', error);
-                alert('Failed to delete voucher');
+                alert(getTranslation('alertDeleteFail'));
             });
     }
 

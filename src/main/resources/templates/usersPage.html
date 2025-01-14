@@ -86,6 +86,10 @@
     <div class="container-fluid">
         <button class="btn btn-custom" id="vouchersButton">Vouchers</button>
         <button class="btn btn-custom" id="logoutButton">Logout</button>
+        <select id="languageSelect" class="form-select form-select-sm ms-auto" style="width: auto;">
+            <option value="en">English</option>
+            <option value="uk">Українська</option>
+        </select>
     </div>
 </nav>
 
@@ -98,6 +102,81 @@
 
 <script>
     const token = localStorage.getItem('token');
+    const translations = {
+        en: {
+            vouchers: "Vouchers",
+            logout: "Logout",
+            noUsersFound: "No users found.",
+            phoneNumber: "Phone number",
+            role: "Role",
+            status: "Status",
+            active: "Active",
+            inactive: "Inactive",
+            activate: "Activate",
+            deactivate: "Deactivate",
+            failedToLoadUsers: "Failed to load users.",
+            userStatusUpdated: "User status updated successfully.",
+            userStatusUpdateFailed: "Failed to update user status: "
+        },
+        uk: {
+            vouchers: "Ваучери",
+            logout: "Вийти",
+            noUsersFound: "Користувачів не знайдено.",
+            phoneNumber: "Телефон",
+            role: "Роль",
+            status: "Статус",
+            active: "Активний",
+            inactive: "Неактивний",
+            activate: "Активувати",
+            deactivate: "Деактивувати",
+            failedToLoadUsers: "Не вдалося завантажити користувачів.",
+            userStatusUpdated: "Статус користувача успішно оновлено.",
+            userStatusUpdateFailed: "Не вдалося оновити статус користувача: "
+        }
+    };
+
+    const languageSelect = document.getElementById('languageSelect');
+    const updateLanguage = (language) => {
+        document.getElementById('vouchersButton').textContent = translations[language].vouchers;
+        document.getElementById('logoutButton').textContent = translations[language].logout;
+
+        const usersList = document.getElementById('usersList');
+        if (usersList.children.length > 0) {
+            Array.from(usersList.children).forEach(userCard => {
+                const username = userCard.querySelector('h5');
+                const phoneNumberLabel = userCard.querySelector('p:nth-of-type(1) strong');
+                const roleLabel = userCard.querySelector('p:nth-of-type(2) strong');
+                const statusLabel = userCard.querySelector('p:nth-of-type(3) strong');
+                const statusValue = userCard.querySelector('p:nth-of-type(3)');
+                const activateButton = userCard.querySelector('.btn-success');
+                const deactivateButton = userCard.querySelector('.btn-danger');
+
+                if (username && phoneNumberLabel && roleLabel && statusLabel && statusValue && activateButton && deactivateButton) {
+                    phoneNumberLabel.textContent = translations[language].phoneNumber + ':';
+                    roleLabel.textContent = translations[language].role + ':';
+                    statusLabel.textContent = translations[language].status + ':';
+                    const isActive = statusValue.textContent.includes(translations[language === 'en' ? 'uk' : 'en'].active);
+                    statusValue.innerHTML = `<strong>${translations[language].status}:</strong> ${isActive ? translations[language].active : translations[language].inactive}`;
+                    activateButton.textContent = translations[language].activate;
+                    deactivateButton.textContent = translations[language].deactivate;
+                }
+            });
+        }
+    };
+
+    const setInitialLanguage = () => {
+        const savedLanguage = localStorage.getItem('language') || 'en';
+        document.getElementById('languageSelect').value = savedLanguage;
+        updateLanguage(savedLanguage);
+    };
+
+    languageSelect.addEventListener('change', (e) => {
+        const selectedLanguage = e.target.value;
+        localStorage.setItem('language', selectedLanguage);
+        updateLanguage(selectedLanguage);
+    });
+
+    setInitialLanguage();
 
     if (!token) {
         window.location.href = '/view/login';
@@ -113,17 +192,19 @@
         .then(response => response.json())
         .then(userData => {
             const usersList = document.getElementById('usersList');
+            const language = languageSelect.value;
+
             if (userData.data && userData.data.length > 0) {
                 userData.data.forEach(user => {
                     const userCard = document.createElement('div');
                     userCard.classList.add('card');
                     userCard.innerHTML = `
                         <h5>${user.username}</h5>
-                        <p><strong>Phone number:</strong> ${user.phoneNumber}</p>
-                        <p><strong>Role:</strong> ${user.role}</p>
-                        <p><strong>Status:</strong> ${user.accountStatus ? 'Active' : 'Inactive'}</p>
-                        <button class="btn btn-success btn-status" data-id="${user.id}" data-status="true">Activate</button>
-                        <button class="btn btn-danger btn-status" data-id="${user.id}" data-status="false">Deactivate</button>
+                        <p><strong>${translations[language].phoneNumber}:</strong> ${user.phoneNumber}</p>
+                        <p><strong>${translations[language].role}:</strong> ${user.role}</p>
+                        <p><strong>${translations[language].status}:</strong> ${user.accountStatus ? translations[language].active : translations[language].inactive}</p>
+                        <button class="btn btn-success btn-status" data-id="${user.id}" data-status="true">${translations[language].activate}</button>
+                        <button class="btn btn-danger btn-status" data-id="${user.id}" data-status="false">${translations[language].deactivate}</button>
                     `;
                     usersList.appendChild(userCard);
                 });
@@ -136,15 +217,16 @@
                     });
                 });
             } else {
-                usersList.innerHTML = '<p class="text-center">No users found.</p>';
+                usersList.innerHTML = `<p class="text-center">${translations[language].noUsersFound}</p>`;
             }
         })
         .catch(error => {
             console.error('Error fetching users:', error);
-            alert('Failed to load users.');
+            alert(translations[languageSelect.value].failedToLoadUsers);
         });
 
     function updateUserStatus(userId, isActive) {
+        const language = languageSelect.value;
         fetch('/users/changeAccountStatus', {
             method: 'PATCH',
             headers: {
@@ -156,15 +238,15 @@
             .then(response => response.json())
             .then(data => {
                 if (data.statusCode === "OK") {
-                    alert(`User status updated successfully.`);
-                    window.location.reload();
+                    alert(translations[language].userStatusUpdated);
+                    updateLanguage(language);
                 } else {
-                    alert(`Failed to update user status: ${data.statusMessage}`);
+                    alert(`${translations[language].userStatusUpdateFailed}${data.statusMessage}`);
                 }
             })
             .catch(error => {
                 console.error('Error updating user status:', error);
-                alert('Failed to update user status.');
+                alert(translations[language].userStatusUpdateFailed);
             });
     }
 
