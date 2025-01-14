@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -134,16 +136,24 @@ public class UserController {
 
     @GetMapping("/allUsers")
     @PreAuthorize("hasAuthority('ADMIN_READ')")
-    public ResponseEntity<?> getAllUsers(@RequestHeader(name = "Accept-Language", required = false) String locale) {
-        logger.info("Received request to get all users");
+    public ResponseEntity<?> getAllUsers(
+            @RequestHeader(name = "Accept-Language", required = false) String locale,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "3") int size) {
+
+        logger.info("Received request to get all users - Page: {}, Size: {}", page, size);
 
         try {
-            List<UserDTO> users = userService.getAllUsers();
-            logger.info("All users successfully received. Found {} users.", users.size());
+            Page<UserDTO> usersPage = userService.getAllUsers(PageRequest.of(page, size));
+            logger.info("All users successfully received. Found {} users on page {}.", usersPage.getContent().size(), page);
+
             Map<String, Object> response = new HashMap<>();
             response.put("statusCode", StatusCodes.OK.name());
             response.put("statusMessage", messageSource.getMessage("users.all.success", null, Locale.forLanguageTag(locale)));
-            response.put("data", users);
+            response.put("data", usersPage.getContent());
+            response.put("totalPages", usersPage.getTotalPages());
+            response.put("currentPage", usersPage.getNumber());
+            response.put("totalElements", usersPage.getTotalElements());
             return ResponseEntity.ok(response);
         } catch (Exception ex) {
             logger.error("Error during getting all users: {}", ex.getMessage());
@@ -153,6 +163,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
 
     @PatchMapping("/changeAccountStatus")
     @PreAuthorize("hasAuthority('ADMIN_UPDATE')")

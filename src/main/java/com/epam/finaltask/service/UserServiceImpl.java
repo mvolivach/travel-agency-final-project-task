@@ -8,6 +8,8 @@ import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.models.User;
 import com.epam.finaltask.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -40,12 +42,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDTO> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        return users.stream()
-                .map(userMapper::toUserDTO)
-                .toList();
+    public Page<UserDTO> getAllUsers(Pageable pageable) {
+        Page<User> usersPage = userRepository.findAll(pageable);
+        return usersPage.map(userMapper::toUserDTO);
     }
+
 
     @Override
     public UserDTO getUserByUsername(String username) {

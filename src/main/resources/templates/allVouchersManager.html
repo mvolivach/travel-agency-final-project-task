@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manager View - All Vouchers</title>
+    <title>All Vouchers Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" href="data:,">
 
@@ -60,15 +60,21 @@
             background-color: #4a4a4a;
             cursor: pointer;
         }
-
+        .select-inline {
+            display: inline-block;
+            width: auto;
+        }
         .form-control-sm {
             font-size: 12px;
             padding: 0.5rem;
         }
-
-        .select-inline {
-            display: inline-block;
-            width: auto;
+        .filter-form{
+            padding: 10px 10px;
+        }
+        .filter-form select,
+        .filter-form input {
+            width: 100%;
+            margin: 0;
         }
     </style>
 </head>
@@ -82,6 +88,55 @@
         <button class="btn btn-custom ms-auto" id="logoutButton">Logout</button>
     </div>
 </nav>
+<div class="filter-form mb-4">
+    <form id="filterForm" class="d-flex flex-wrap gap-3 justify-content-between">
+        <div class="flex-fill">
+            <select class="form-select form-control-sm" id="tourTypeFilter">
+                <option value="">Tour Type</option>
+                <option value="HEALTH">Health</option>
+                <option value="SPORTS">Sports</option>
+                <option value="LEISURE">Leisure</option>
+                <option value="SAFARI">Safari</option>
+                <option value="WINE">Wine</option>
+                <option value="ECO">Eco</option>
+                <option value="ADVENTURE">Adventure</option>
+                <option value="CULTURAL">Cultural</option>
+            </select>
+        </div>
+        <div class="flex-fill">
+            <select class="form-select form-control-sm" id="transferTypeFilter">
+                <option value="">Transfer Type</option>
+                <option value="BUS">Bus</option>
+                <option value="TRAIN">Train</option>
+                <option value="PLANE">Plane</option>
+                <option value="SHIP">Ship</option>
+                <option value="PRIVATE_CAR">Private Car</option>
+                <option value="JEEPS">Jeeps</option>
+                <option value="MINIBUS">Minibus</option>
+                <option value="ELECTRICAL_CARS">Electrical Cars</option>
+            </select>
+        </div>
+        <div class="flex-fill">
+            <select class="form-select form-control-sm" id="hotelTypeFilter">
+                <option value="">Hotel Type</option>
+                <option value="ONE_STAR">1 Star</option>
+                <option value="TWO_STARS">2 Stars</option>
+                <option value="THREE_STARS">3 Stars</option>
+                <option value="FOUR_STARS">4 Stars</option>
+                <option value="FIVE_STARS">5 Stars</option>
+            </select>
+        </div>
+        <div class="flex-fill">
+            <input type="number" id="minPriceFilter" class="form-control form-control-sm" placeholder="Min Price">
+        </div>
+        <div class="flex-fill">
+            <input type="number" id="maxPriceFilter" class="form-control form-control-sm" placeholder="Max Price">
+        </div>
+        <div class="flex-fill">
+            <button type="submit" class="btn btn-custom btn-sm w-100">Apply Filters</button>
+        </div>
+    </form>
+</div>
 <div class="container py-5">
     <h3 class="text-center mb-4" id="allVouchersTitle">All Vouchers</h3>
     <table class="table voucher-table">
@@ -126,7 +181,42 @@
             hotUpdateSuccess: "Hot status updated to \"{hotStatus}\" successfully.",
             hotUpdateFail: "Failed to update hot status.",
             noVouchers: "No vouchers found.",
-            fetchError: "Failed to load vouchers."
+            fetchError: "Failed to load vouchers.",
+            filter: {
+                tourType: "Tour Type",
+                transferType: "Transfer Type",
+                hotelType: "Hotel Type",
+                minPrice: "Min Price",
+                maxPrice: "Max Price",
+                applyFilters: "Apply Filters",
+                tourTypes: {
+                    HEALTH: "Health",
+                    SPORTS: "Sports",
+                    LEISURE: "Leisure",
+                    SAFARI: "Safari",
+                    WINE: "Wine",
+                    ECO: "Eco",
+                    ADVENTURE: "Adventure",
+                    CULTURAL: "Cultural"
+                },
+                transferTypes: {
+                    BUS: "Bus",
+                    TRAIN: "Train",
+                    PLANE: "Plane",
+                    SHIP: "Ship",
+                    PRIVATE_CAR: "Private Car",
+                    JEEPS: "Jeeps",
+                    MINIBUS: "Minibus",
+                    ELECTRICAL_CARS: "Electrical Cars"
+                },
+                hotelTypes: {
+                    ONE_STAR: "1 Star",
+                    TWO_STARS: "2 Stars",
+                    THREE_STARS: "3 Stars",
+                    FOUR_STARS: "4 Stars",
+                    FIVE_STARS: "5 Stars"
+                }
+            }
         },
         uk: {
             logout: "Вийти",
@@ -146,10 +236,84 @@
             hotUpdateSuccess: "Гарячий статус успішно оновлено на \"{hotStatus}\".",
             hotUpdateFail: "Не вдалося оновити гарячий статус.",
             noVouchers: "Жодного туру не знайдено.",
-            fetchError: "Не вдалося завантажити тури."
+            fetchError: "Не вдалося завантажити тури.",
+            filter: {
+                tourType: "Тип туру",
+                transferType: "Тип трансферу",
+                hotelType: "Тип готелю",
+                minPrice: "Мін. ціна",
+                maxPrice: "Макс. ціна",
+                applyFilters: "Застосувати фільтри",
+                tourTypes: {
+                    HEALTH: "Оздоровчий",
+                    SPORTS: "Спортивний",
+                    LEISURE: "Відпочинок",
+                    SAFARI: "Сафарі",
+                    WINE: "Винний",
+                    ECO: "Еко",
+                    ADVENTURE: "Пригодницький",
+                    CULTURAL: "Культурний"
+                },
+                transferTypes: {
+                    BUS: "Автобус",
+                    TRAIN: "Поїзд",
+                    PLANE: "Літак",
+                    SHIP: "Корабель",
+                    PRIVATE_CAR: "Приватний автомобіль",
+                    JEEPS: "Джипи",
+                    MINIBUS: "Мікроавтобус",
+                    ELECTRICAL_CARS: "Електромобілі"
+                },
+                hotelTypes: {
+                    ONE_STAR: "1 зірка",
+                    TWO_STARS: "2 зірки",
+                    THREE_STARS: "3 зірки",
+                    FOUR_STARS: "4 зірки",
+                    FIVE_STARS: "5 зірок"
+                }
+            }
         }
     };
+    const updateFiltersLocalization = (language) => {
+        const updateDropdown = (dropdownId, placeholder, options) => {
+            const dropdown = document.getElementById(dropdownId);
+            dropdown.innerHTML = "";
+            const placeholderOption = document.createElement('option');
+            placeholderOption.value = "";
+            placeholderOption.textContent = placeholder;
+            dropdown.appendChild(placeholderOption);
+            for (const [value, label] of Object.entries(options)) {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = label;
+                dropdown.appendChild(option);
+            }
+        };
 
+        updateDropdown(
+            'tourTypeFilter',
+            translations[language].filter.tourType,
+            translations[language].filter.tourTypes
+        );
+        updateDropdown(
+            'transferTypeFilter',
+            translations[language].filter.transferType,
+            translations[language].filter.transferTypes
+        );
+        updateDropdown(
+            'hotelTypeFilter',
+            translations[language].filter.hotelType,
+            translations[language].filter.hotelTypes
+        );
+
+        document.getElementById('minPriceFilter').placeholder = translations[language].filter.minPrice;
+        document.getElementById('maxPriceFilter').placeholder = translations[language].filter.maxPrice;
+
+        const applyButton = document.querySelector('#filterForm button[type="submit"]');
+        if (applyButton) {
+            applyButton.textContent = translations[language].filter.applyFilters;
+        }
+    };
     const languageSelect = document.getElementById('languageSelect');
     const updateLanguage = (language) => {
         document.getElementById('logoutButton').textContent = translations[language].logout;
@@ -164,6 +328,7 @@
         document.getElementById('evictionDateHeader').textContent = translations[language].evictionDate;
         document.getElementById('hotHeader').textContent = translations[language].hot;
         document.getElementById('allVouchersTitle').textContent = translations[language].allVouchers;
+        updateFiltersLocalization(language);
     };
 
     const setInitialLanguage = () => {
@@ -182,6 +347,110 @@
     if (!token) {
         window.location.href = '/view/login';
     }
+    const renderVouchers = (vouchers) => {
+        const vouchersList = document.getElementById('vouchersList');
+        vouchersList.innerHTML = '';
+
+        if (vouchers.length > 0) {
+            vouchers.forEach(voucher => {
+                const voucherRow = document.createElement('tr');
+                voucherRow.innerHTML =
+                    `<td>${voucher.title}</td>
+                <td>${voucher.description}</td>
+                <td>$${voucher.price.toFixed(2)}</td>
+                <td>${voucher.tourType}</td>
+                <td>${voucher.transferType}</td>
+                <td>${voucher.hotelType}</td>
+                <td>
+                    <div class="select-inline">
+                        <select class="form-control form-control-sm status-select" data-id="${voucher.id}">
+                            <option value="REGISTERED" ${voucher.status === 'REGISTERED' ? 'selected' : ''}>Registered</option>
+                            <option value="PAID" ${voucher.status === 'PAID' ? 'selected' : ''}>Paid</option>
+                            <option value="CANCELED" ${voucher.status === 'CANCELED' ? 'selected' : ''}>Canceled</option>
+                        </select>
+                    </div>
+                </td>
+                <td>${voucher.arrivalDate}</td>
+                <td>${voucher.evictionDate}</td>
+                <td>
+                    <div class="select-inline">
+                        <select class="form-control form-control-sm hot-status-select" data-id="${voucher.id}">
+                            <option value="true" ${voucher.isHot === 'true' ? 'selected' : ''}>Yes</option>
+                            <option value="false" ${voucher.isHot === 'false' ? 'selected' : ''}>No</option>
+                        </select>
+                    </div>
+                </td>`;
+                vouchersList.appendChild(voucherRow);
+            });
+
+            addStatusChangeHandlers();
+            addHotStatusChangeHandlers();
+
+        } else {
+            vouchersList.innerHTML = `<tr><td colspan="11" class="text-center">${translations[languageSelect.value].noVouchers}</td></tr>`;
+        }
+    };
+
+    const addStatusChangeHandlers = () => {
+        document.querySelectorAll('.status-select').forEach(select => {
+            select.addEventListener('change', (e) => {
+                const voucherId = e.target.getAttribute('data-id');
+                const newStatus = e.target.value;
+
+                fetch(`/vouchers/${voucherId}/status?status=${newStatus}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept-Language': languageSelect.value
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to update status');
+                        }
+                        return response.json();
+                    })
+                    .then(() => {
+                        alert(translations[languageSelect.value].statusUpdateSuccess.replace('{status}', newStatus));
+                    })
+                    .catch(() => {
+                        alert(translations[languageSelect.value].statusUpdateFail);
+                    });
+            });
+        });
+    };
+
+    const addHotStatusChangeHandlers = () => {
+        document.querySelectorAll('.hot-status-select').forEach(select => {
+            select.addEventListener('change', (e) => {
+                const voucherId = e.target.getAttribute('data-id');
+                const newHotStatus = e.target.value === 'true';
+
+                fetch(`/vouchers/${voucherId}/hot-status?hotStatus=${newHotStatus}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept-Language': languageSelect.value
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to update hot status');
+                        }
+                        return response.json();
+                    })
+                    .then(() => {
+                        alert(translations[languageSelect.value].hotUpdateSuccess.replace('{hotStatus}', newHotStatus ? 'Yes' : 'No'));
+                    })
+                    .catch(() => {
+                        alert(translations[languageSelect.value].hotUpdateFail);
+                    });
+            });
+        });
+    };
+
 
     fetch('/vouchers/allVouchers', {
         method: 'GET',
@@ -191,103 +460,42 @@
         }
     })
         .then(response => response.json())
-        .then(voucherData => {
-            const vouchersList = document.getElementById('vouchersList');
-            if (voucherData.results.length > 0) {
-                voucherData.results.forEach(voucher => {
-                    const voucherRow = document.createElement('tr');
-                    voucherRow.innerHTML =
-                        `<td>${voucher.title}</td>
-                        <td>${voucher.description}</td>
-                        <td>$${voucher.price.toFixed(2)}</td>
-                        <td>${voucher.tourType}</td>
-                        <td>${voucher.transferType}</td>
-                        <td>${voucher.hotelType}</td>
-                        <td>
-                            <div class="select-inline">
-                                <select class="form-control form-control-sm status-select" data-id="${voucher.id}">
-                                    <option value="REGISTERED" ${voucher.status === 'REGISTERED' ? 'selected' : ''}>Registered</option>
-                                    <option value="PAID" ${voucher.status === 'PAID' ? 'selected' : ''}>Paid</option>
-                                    <option value="CANCELED" ${voucher.status === 'CANCELED' ? 'selected' : ''}>Canceled</option>
-                                </select>
-                            </div>
-                        </td>
-                        <td>${voucher.arrivalDate}</td>
-                        <td>${voucher.evictionDate}</td>
-                        <td>
-                            <div class="select-inline">
-                                <select class="form-control form-control-sm hot-status-select" data-id="${voucher.id}">
-                                    <option value="true" ${voucher.isHot === 'true' ? 'selected' : ''}>Yes</option>
-                                    <option value="false" ${voucher.isHot === 'false' ? 'selected' : ''}>No</option>
-                                </select>
-                            </div>
-                        </td>`;
-                    vouchersList.appendChild(voucherRow);
-                });
-
-                document.querySelectorAll('.status-select').forEach(select => {
-                    select.addEventListener('change', (e) => {
-                        const voucherId = e.target.getAttribute('data-id');
-                        const newStatus = e.target.value;
-
-                        fetch(`/vouchers/${voucherId}/status?status=${newStatus}`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json',
-                                'Accept-Language': languageSelect.value
-                            }
-                        })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error('Failed to update status');
-                                }
-                                return response.json();
-                            })
-                            .then(() => {
-                                alert(translations[languageSelect.value].statusUpdateSuccess.replace('{status}', newStatus));
-                            })
-                            .catch(() => {
-                                alert(translations[languageSelect.value].statusUpdateFail);
-                            });
-                    });
-                });
-
-                document.querySelectorAll('.hot-status-select').forEach(select => {
-                    select.addEventListener('change', (e) => {
-                        const voucherId = e.target.getAttribute('data-id');
-                        const newHotStatus = e.target.value === 'true';
-
-                        fetch(`/vouchers/${voucherId}/hot-status?hotStatus=${newHotStatus}`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json',
-                                'Accept-Language': languageSelect.value
-                            }
-                        })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error('Failed to update hot status');
-                                }
-                                return response.json();
-                            })
-                            .then(() => {
-                                alert(translations[languageSelect.value].hotUpdateSuccess.replace('{hotStatus}', newHotStatus ? 'Yes' : 'No'));
-                            })
-                            .catch(() => {
-                                alert(translations[languageSelect.value].hotUpdateFail);
-                            });
-                    });
-                });
-
-            } else {
-                vouchersList.innerHTML = `<tr><td colspan="11" class="text-center">${translations[languageSelect.value].noVouchers}</td></tr>`;
-            }
-        })
+        .then(voucherData => renderVouchers(voucherData.results))
         .catch(() => {
             alert(translations[languageSelect.value].fetchError);
         });
+
+    document.getElementById('filterForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const tourType = document.getElementById('tourTypeFilter').value;
+        const transferType = document.getElementById('transferTypeFilter').value;
+        const hotelType = document.getElementById('hotelTypeFilter').value;
+        const minPrice = document.getElementById('minPriceFilter').value;
+        const maxPrice = document.getElementById('maxPriceFilter').value;
+
+        const queryParams = new URLSearchParams();
+
+        if (tourType) queryParams.append('tourType', tourType);
+        if (transferType) queryParams.append('transferType', transferType);
+        if (hotelType) queryParams.append('hotelType', hotelType);
+        if (minPrice) queryParams.append('minPrice', minPrice);
+        if (maxPrice) queryParams.append('maxPrice', maxPrice);
+
+        fetch(`/vouchers/filter?${queryParams.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Accept-Language': languageSelect.value
+            }
+        })
+            .then(response => response.json())
+            .then(voucherData => renderVouchers(voucherData.results))
+            .catch(() => {
+                alert(translations[languageSelect.value].fetchError);
+            });
+    });
 
     document.getElementById('logoutButton').addEventListener('click', () => {
         localStorage.removeItem('token');
