@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.*;
 
 @RestController
@@ -100,7 +100,6 @@ public class VoucherController {
         response.put("currentPage", vouchersPage.getNumber());
         return ResponseEntity.ok(response);
     }
-
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('ADMIN_CREATE')")

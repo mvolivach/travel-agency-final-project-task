@@ -2,28 +2,34 @@ package com.epam.finaltask.service;
 
 import com.epam.finaltask.models.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class UserDetailsImpl implements UserDetails {
+
+  @Serial
   private static final long serialVersionUID = 1L;
 
-  private UUID id;
+  @Getter
+  private final UUID id;
 
-  private String username;
+  private final String username;
 
-  private String phoneNumber;
+  @Getter
+  private final String phoneNumber;
 
   @JsonIgnore
-  private String password;
+  private final String password;
 
-  private Collection<? extends GrantedAuthority> authorities;
+  private final Collection<? extends GrantedAuthority> authorities;
 
   public UserDetailsImpl(UUID id, String username, String phoneNumber, String password,
                          Collection<? extends GrantedAuthority> authorities) {
@@ -51,14 +57,6 @@ public class UserDetailsImpl implements UserDetails {
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return authorities;
-  }
-
-  public UUID getId() {
-    return id;
-  }
-
-  public String getPhoneNumber() {
-    return phoneNumber;
   }
 
   @Override

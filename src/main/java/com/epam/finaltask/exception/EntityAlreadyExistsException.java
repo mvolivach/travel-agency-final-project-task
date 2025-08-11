@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public class EntityAlreadyExistsException extends RuntimeException {
-    private final StatusCodes errorCode;
+    private final StatusCodes statusCode;
 
-    public EntityAlreadyExistsException(String message, StatusCodes errorCode) {
+    public EntityAlreadyExistsException(String message) {
         super(message);
-        this.errorCode = errorCode;
+        this.statusCode = StatusCodes.DUPLICATE_USERNAME;
     }
 }

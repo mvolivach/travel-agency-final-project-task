@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.context.MessageSource;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -164,7 +163,6 @@ public class UserController {
         }
     }
 
-
     @PatchMapping("/changeAccountStatus")
     @PreAuthorize("hasAuthority('ADMIN_UPDATE')")
     public ResponseEntity<?> changeAccountStatus(
@@ -194,5 +192,6 @@ public class UserController {
             response.put("statusMessage", messageSource.getMessage("user.status.update.error", new Object[]{ex.getMessage()}, Locale.forLanguageTag(locale)));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
+
     }
 }

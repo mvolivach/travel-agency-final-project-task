@@ -1,7 +1,6 @@
 package com.epam.finaltask.controllers;
 
 import com.epam.finaltask.dto.UserDTO;
-import com.epam.finaltask.exception.EntityNotFoundException;
 import com.epam.finaltask.models.Role;
 import com.epam.finaltask.models.User;
 import com.epam.finaltask.auth.request.LoginRequest;
@@ -16,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
@@ -37,20 +37,24 @@ public class AuthController {
 
   private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-  @Autowired
-  private AuthenticationManager authenticationManager;
+  private final AuthenticationManager authenticationManager;
+
+  private final UserRepository userRepository;
+
+  private final PasswordEncoder encoder;
+
+  private final JwtUtils jwtUtils;
+
+  private final MessageSource messageSource;
 
   @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
-  private PasswordEncoder encoder;
-
-  @Autowired
-  private JwtUtils jwtUtils;
-
-  @Autowired
-  private MessageSource messageSource;
+  public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, PasswordEncoder encoder, JwtUtils jwtUtils, MessageSource messageSource) {
+    this.authenticationManager = authenticationManager;
+    this.userRepository = userRepository;
+    this.encoder = encoder;
+    this.jwtUtils = jwtUtils;
+    this.messageSource = messageSource;
+  }
 
   @PostMapping("/signin")
   public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
@@ -79,7 +83,7 @@ public class AuthController {
 
       UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
       List<String> permissions = userDetails.getAuthorities().stream()
-              .map(item -> item.getAuthority())
+              .map(GrantedAuthority::getAuthority)
               .collect(Collectors.toList());
 
       logger.info("User authenticated successfully: {}", userDetails.getUsername());
@@ -104,19 +108,13 @@ public class AuthController {
     if (bindingResult.hasErrors()) {
       logger.warn("Sign-up validation failed for username: {}", userDTO.getUsername());
       List<String> errors = bindingResult.getFieldErrors().stream()
-              .map(fieldError -> {
-                switch (fieldError.getField()) {
-                  case "username":
-                    return messageSource.getMessage("username.invalid", null, userLocale);
-                  case "password":
-                    return messageSource.getMessage("password.invalid", null, userLocale);
-                  case "phoneNumber":
-                    return messageSource.getMessage("phoneNumber.invalid", null, userLocale);
-                  default:
-                    return messageSource.getMessage("field.invalid", null, userLocale);
-                }
+              .map(fieldError -> switch (fieldError.getField()) {
+                  case "username" -> messageSource.getMessage("username.invalid", null, userLocale);
+                  case "password" -> messageSource.getMessage("password.invalid", null, userLocale);
+                  case "phoneNumber" -> messageSource.getMessage("phoneNumber.invalid", null, userLocale);
+                  default -> messageSource.getMessage("field.invalid", null, userLocale);
               })
-              .collect(Collectors.toList());
+              .toList();
       return ResponseEntity.badRequest().body(Map.of("errors", errors));
     }
 

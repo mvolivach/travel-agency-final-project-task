@@ -43,7 +43,7 @@ public class VoucherMapper {
         dto.setStatus(voucher.getStatus() != null ? voucher.getStatus().name() : null);
         dto.setArrivalDate(voucher.getArrivalDate());
         dto.setEvictionDate(voucher.getEvictionDate());
-        dto.setUserId(voucher.getUser() != null ? voucher.getUser().getId() : null); // User can be null
+        dto.setUserId(voucher.getUser() != null ? voucher.getUser().getId() : null);
         dto.setIsHot(voucher.isHot() ? "true" : "false");
         return dto;
     }

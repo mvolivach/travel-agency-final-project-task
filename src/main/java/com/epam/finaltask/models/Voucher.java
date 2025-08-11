@@ -1,15 +1,15 @@
 package com.epam.finaltask.models;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Entity
 @Table(name = "vouchers")
@@ -42,27 +42,9 @@ public class Voucher {
     private LocalDate evictionDate;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = true)
+    @JoinColumn(name = "user_id")
     private User user;
 
     private boolean isHot;
 
-    public Voucher() {
-
-    }
-
-    public Voucher(UUID id, String title, String description, double price, TourType tourType, TransferType transferType, HotelType hotelType, VoucherStatus status, LocalDate arrivalDate, LocalDate evictionDate, User user, boolean isHot) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.price = price;
-        this.tourType = tourType;
-        this.transferType = transferType;
-        this.hotelType = hotelType;
-        this.status = status;
-        this.arrivalDate = arrivalDate;
-        this.evictionDate = evictionDate;
-        this.user = user;
-        this.isHot = isHot;
-    }
 }

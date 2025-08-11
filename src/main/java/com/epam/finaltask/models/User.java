@@ -3,9 +3,7 @@ package com.epam.finaltask.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +11,8 @@ import java.util.UUID;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Builder
 @Table(name = "users",
@@ -37,7 +37,7 @@ public class User {
   @Column(name = "role")
   private Role role;
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "user")
   private List<Voucher> vouchers = new ArrayList<>();
 
   @NotBlank
@@ -47,19 +47,5 @@ public class User {
   private double balance;
 
   private boolean accountStatus = true;
-
-  public User() {
-  }
-
-  public User(UUID id, String username, String password, Role role, List<Voucher> vouchers, String phoneNumber, double balance, boolean accountStatus) {
-    this.id = id;
-    this.username = username;
-    this.password = password;
-    this.role = role;
-    this.vouchers = vouchers;
-    this.phoneNumber = phoneNumber;
-    this.balance = balance;
-    this.accountStatus = accountStatus;
-  }
 
 }

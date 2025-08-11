@@ -3,7 +3,6 @@ package com.epam.finaltask.service;
 import com.epam.finaltask.dto.UserDTO;
 import com.epam.finaltask.exception.EntityAlreadyExistsException;
 import com.epam.finaltask.exception.EntityNotFoundException;
-import com.epam.finaltask.exception.StatusCodes;
 import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.models.User;
 import com.epam.finaltask.repository.UserRepository;
@@ -12,9 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -32,7 +28,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO register(UserDTO userDTO) {
         if (userRepository.existsByUsername(userDTO.getUsername())) {
-            throw new EntityAlreadyExistsException("This username already exists", StatusCodes.DUPLICATE_USERNAME);
+            throw new EntityAlreadyExistsException("This username already exists");
         }
         User userModel = userMapper.toUser(userDTO);
         userModel.setPassword(passwordEncoder.encode(userDTO.getPassword()));
@@ -61,21 +57,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getUserById(UUID id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
-
-        if (!user.isAccountStatus()) {
-            throw new IllegalStateException("User is inactive with id: " + id);
-        }
-
-        return userMapper.toUserDTO(user);
-    }
-
-    @Override
     public UserDTO updateBalance(String username, double amount) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found", StatusCodes.ENTITY_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         double newBalance = user.getBalance() + amount;
 

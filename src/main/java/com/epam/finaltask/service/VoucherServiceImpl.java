@@ -2,21 +2,19 @@ package com.epam.finaltask.service;
 
 import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.exception.EntityNotFoundException;
-import com.epam.finaltask.exception.StatusCodes;
 import com.epam.finaltask.mapper.VoucherMapper;
 import com.epam.finaltask.models.*;
 import com.epam.finaltask.repository.UserRepository;
 import com.epam.finaltask.repository.VoucherRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,9 +31,9 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public VoucherDTO changeTourStatus(String id, String status) {
+    public void changeTourStatus(String id, String status) {
         Voucher existingVoucher = voucherRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new EntityNotFoundException("Voucher with Id " + id + " not found", StatusCodes.ENTITY_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Voucher with Id " + id + " not found"));
 
         if ("CANCELED".equalsIgnoreCase(status) || "REGISTERED".equalsIgnoreCase(status)) {
             User user = existingVoucher.getUser();
@@ -54,13 +52,13 @@ public class VoucherServiceImpl implements VoucherService {
         }
 
         Voucher savedVoucher = voucherRepository.save(existingVoucher);
-        return voucherMapper.toVoucherDTO(savedVoucher);
+        voucherMapper.toVoucherDTO(savedVoucher);
     }
 
     @Override
     public void cancelVoucher(String voucherId, UUID userId) {
         Voucher voucher = voucherRepository.findById(UUID.fromString(voucherId))
-                .orElseThrow(() -> new EntityNotFoundException("Voucher not found", StatusCodes.ENTITY_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Voucher not found"));
 
         if (voucher.getUser() == null || !voucher.getUser().getId().equals(userId)) {
             throw new IllegalStateException("You do not own this voucher");
@@ -83,22 +81,12 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     public VoucherDTO create(VoucherDTO voucherDTO) {
-        if (voucherDTO.getArrivalDate().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Arrival date cannot be in the past");
-        }
-
-        if (voucherDTO.getEvictionDate().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Eviction date cannot be in the past");
-        }
-
-        if (voucherDTO.getEvictionDate().isBefore(voucherDTO.getArrivalDate())) {
-            throw new IllegalArgumentException("Eviction date cannot be earlier than arrival date");
-        }
+        validateVoucherDates(voucherDTO);
 
         User user = null;
         if (voucherDTO.getUserId() != null) {
             user = userRepository.findById(voucherDTO.getUserId())
-                    .orElseThrow(() -> new EntityNotFoundException("User not found", StatusCodes.ENTITY_NOT_FOUND));
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
         }
 
         Voucher voucher = voucherMapper.toVoucher(voucherDTO, user);
@@ -111,10 +99,10 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public VoucherDTO orderVoucher(String voucherId, UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found", StatusCodes.ENTITY_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         Voucher voucher = voucherRepository.findById(UUID.fromString(voucherId))
-                .orElseThrow(() -> new EntityNotFoundException("Voucher not found", StatusCodes.ENTITY_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Voucher not found"));
 
         if (voucher.getUser() != null) {
             throw new IllegalStateException("Voucher is already ordered");
@@ -143,35 +131,25 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public VoucherDTO findById(String voucherId) {
         Voucher voucher = voucherRepository.findById(UUID.fromString(voucherId))
-                .orElseThrow(() -> new EntityNotFoundException("Voucher with Id " + voucherId + " not found", StatusCodes.ENTITY_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Voucher with Id " + voucherId + " not found"));
         return voucherMapper.toVoucherDTO(voucher);
     }
 
     @Override
     public VoucherDTO update(String id, VoucherDTO voucherDTO) {
         Voucher existingVoucher = voucherRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new EntityNotFoundException("Voucher with Id " + id + " not found", StatusCodes.ENTITY_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Voucher with Id " + id + " not found"));
 
         if (existingVoucher.getStatus() == VoucherStatus.PAID) {
             throw new IllegalStateException("Voucher status is PAID and cannot be modified. Change the status first.");
         }
 
-        if (voucherDTO.getArrivalDate().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Arrival date cannot be in the past");
-        }
-
-        if (voucherDTO.getEvictionDate().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Eviction date cannot be in the past");
-        }
-
-        if (voucherDTO.getEvictionDate().isBefore(voucherDTO.getArrivalDate())) {
-            throw new IllegalArgumentException("Eviction date cannot be earlier than arrival date");
-        }
+        validateVoucherDates(voucherDTO);
 
         User user = null;
         if (voucherDTO.getUserId() != null) {
             user = userRepository.findById(voucherDTO.getUserId())
-                    .orElseThrow(() -> new EntityNotFoundException("User not found", StatusCodes.ENTITY_NOT_FOUND));
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
         }
 
         Voucher updatedVoucher = voucherMapper.toVoucher(voucherDTO, user);
@@ -186,7 +164,7 @@ public class VoucherServiceImpl implements VoucherService {
         UUID id = UUID.fromString(voucherId);
 
         Voucher voucher = voucherRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Voucher with Id " + voucherId + " not found", StatusCodes.ENTITY_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Voucher with Id " + voucherId + " not found"));
 
         if (voucher.getStatus() == VoucherStatus.PAID && voucher.getUser() != null) {
             User user = voucher.getUser();
@@ -201,22 +179,8 @@ public class VoucherServiceImpl implements VoucherService {
     public Page<VoucherDTO> findAllByUserId(String userId, Pageable pageable) {
         List<Voucher> allVouchers = voucherRepository.findAllByUserId(UUID.fromString(userId)).stream()
                 .sorted((v1, v2) -> Boolean.compare(v2.isHot(), v1.isHot()))
-                .collect(Collectors.toList());
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), allVouchers.size());
-        List<VoucherDTO> paginatedVouchers = allVouchers.subList(start, end).stream()
-                .map(voucherMapper::toVoucherDTO)
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(paginatedVouchers, pageable, allVouchers.size());
-    }
-
-
-    @Override
-    public List<VoucherDTO> findAllByTourType(String tourType) {
-        return voucherRepository.findAllByTourType(TourType.valueOf(tourType)).stream()
-                .map(voucherMapper::toVoucherDTO)
-                .collect(Collectors.toList());
+                .toList();
+        return paginateList(allVouchers, pageable, voucherMapper::toVoucherDTO);
     }
 
     @Override
@@ -228,63 +192,52 @@ public class VoucherServiceImpl implements VoucherService {
                 .filter(v -> minPrice == null || v.getPrice() >= minPrice)
                 .filter(v -> maxPrice == null || v.getPrice() <= maxPrice)
                 .sorted((v1, v2) -> Boolean.compare(v2.isHot(), v1.isHot()))
-                .collect(Collectors.toList());
+                .toList();
 
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), filteredVouchers.size());
-        List<VoucherDTO> paginatedVouchers = filteredVouchers.subList(start, end).stream()
-                .map(voucherMapper::toVoucherDTO)
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(paginatedVouchers, pageable, filteredVouchers.size());
+        return paginateList(filteredVouchers, pageable, voucherMapper::toVoucherDTO);
     }
 
     @Override
-    public List<VoucherDTO> findAllByTransferType(String transferType) {
-        return voucherRepository.findAllByTransferType(TransferType.valueOf(transferType)).stream()
-                .map(voucherMapper::toVoucherDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<VoucherDTO> findAllByPrice(String price) {
-        double targetPrice = Double.parseDouble(price);
-        return voucherRepository.findAllByPrice(targetPrice).stream()
-                .map(voucherMapper::toVoucherDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<VoucherDTO> findAllByHotelType(String hotelType) {
-        return voucherRepository.findAllByHotelType(HotelType.valueOf(hotelType)).stream()
-                .map(voucherMapper::toVoucherDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public VoucherDTO changeHotStatus(String id, boolean hotStatus) {
+    public void changeHotStatus(String id, boolean hotStatus) {
         Voucher existingVoucher = voucherRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new EntityNotFoundException("Voucher with Id " + id + " not found", StatusCodes.ENTITY_NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Voucher with Id " + id + " not found"));
 
         existingVoucher.setHot(hotStatus);
 
         Voucher savedVoucher = voucherRepository.save(existingVoucher);
 
-        return voucherMapper.toVoucherDTO(savedVoucher);
+        voucherMapper.toVoucherDTO(savedVoucher);
     }
 
     @Override
     public Page<VoucherDTO> findAll(Pageable pageable) {
         List<Voucher> allVouchers = voucherRepository.findAll().stream()
                 .sorted((v1, v2) -> Boolean.compare(v2.isHot(), v1.isHot()))
-                .collect(Collectors.toList());
+                .toList();
+        return paginateList(allVouchers, pageable, voucherMapper::toVoucherDTO);
+    }
+
+    private void validateVoucherDates(VoucherDTO voucherDTO) {
+        if (voucherDTO.getArrivalDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Arrival date cannot be in the past");
+        }
+        if (voucherDTO.getEvictionDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Eviction date cannot be in the past");
+        }
+        if (voucherDTO.getEvictionDate().isBefore(voucherDTO.getArrivalDate())) {
+            throw new IllegalArgumentException("Eviction date cannot be earlier than arrival date");
+        }
+    }
+
+    private Page<VoucherDTO> paginateList(List<Voucher> sourceList, Pageable pageable, Function<Voucher, VoucherDTO> mapper) {
         int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), allVouchers.size());
-        List<VoucherDTO> paginatedVouchers = allVouchers.subList(start, end).stream()
-                .map(voucherMapper::toVoucherDTO)
+        int end = Math.min(start + pageable.getPageSize(), sourceList.size());
+
+        List<VoucherDTO> pagedList = sourceList.subList(start, end).stream()
+                .map(mapper)
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(paginatedVouchers, pageable, allVouchers.size());
+        return new PageImpl<>(pagedList, pageable, sourceList.size());
     }
 
 }
